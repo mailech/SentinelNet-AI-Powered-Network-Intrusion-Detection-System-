@@ -1,0 +1,10 @@
+# Jupyter
+.ipynb_checkpoints/
+
+# Python virtual env
+venv/
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
