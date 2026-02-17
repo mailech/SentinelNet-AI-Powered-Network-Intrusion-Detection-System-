@@ -11,11 +11,11 @@ This project focuses on building an AI-powered Network Intrusion Detection Syste
 - Performed Exploratory Data Analysis (EDA)
 - Visualized:
 - Visualized traffic behaviour using:
- Count plots
- Bar charts
- Box plots
- Heatmaps
- Distribution plots
+ Count plots,
+ Bar charts,
+ Box plots,
+ Heatmaps,
+ Distribution plots.
 
 
   - Traffic volume by protocol
