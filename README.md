@@ -4,7 +4,7 @@
 
 This project focuses on building an AI-powered Network Intrusion Detection System using the NSL-KDD dataset.
 
-# ✔️ Work Completed
+#  Work Completed
 - Loaded NSL-KDD dataset
 - Explored dataset using Pandas
 - Checked duplicates and unique values
@@ -15,7 +15,7 @@ This project focuses on building an AI-powered Network Intrusion Detection Syste
   - Protocol vs flag heatmap
 - Checked missing values in `src_bytes`
 
-# 📂 Project Structure
+# Project Structure
 AI_SENTINEL_PROJECT
 │
 ├── notebooks
