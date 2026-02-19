@@ -1,0 +1,91 @@
+SentinelNet – AI-Based Network Intrusion Detection System
+
+This project focuses on building an AI-powered Network Intrusion Detection System using the NSL-KDD dataset.
+The main goal is to identify whether network traffic is normal 
+or malicious based on different features in the dataset. This system will help in 
+detecting cyber-attacks automatically.
+
+Milestone-1: Data Loading & Preprocessing
+
+Tools and Libraries Used: 
+• Python
+• Jupyter Notebook
+• Pandas
+• NumPy
+• Matplotlib
+
+SYSTEMATIC FLOW OF WHAT I HAVE DONE SO FAR:
+1.Libraries Imported:
+Imported pandas, numpy, matplotlib, seaborn, and related libraries
+→ To enable data manipulation, analysis, and preprocessing operations.
+
+2. Data Directory Creation
+Created a local data/ folder
+→ To organize and store dataset files systematically.
+
+3. Dataset Download
+Downloaded KDDTrain+.txt and KDDTest+.txt
+→ To obtain the NSL-KDD dataset required for intrusion detection modeling.
+
+4.Column Name Assignment
+Defined all dataset column names explicitly
+→ To structure the raw dataset properly and ensure meaningful feature interpretation.
+
+5.Loading Dataset into DataFrames
+Loaded train and test data using pd.read_csv()
+→ To convert raw text files into structured tabular format for processing.
+
+6.Initial Data Inspection
+Used .head(), .info(), .describe(), and duplicate checks
+→ To understand dataset structure and detect inconsistencies or anomalies.
+
+7. Missing Value Verification
+Checked for null values in both datasets
+→ To ensure data completeness and prevent training errors.
+
+8. Class Distribution Analysis(Bar plot)
+Analyzed normal vs attack traffic distribution
+→ To identify class imbalance and understand dataset behavior.
+
+9 Binary Label Conversion
+Converted multi-class labels into:
+normal = 0
+attack = 1
+→ To simplify the problem into binary classification.
+
+10.Removal of Irrelevant Feature
+Dropped the difficulty_level column
+→ Because it does not contribute to intrusion detection modeling.
+
+11.Categorical Feature Identification
+Identified protocol_type, service, and flag as categorical
+→ To determine which features require encoding before modeling.
+
+12.One-Hot Encoding
+Applied pd.get_dummies() to categorical features
+→ To convert non-numeric features into numerical format suitable for ML algorithms.
+
+13.Train-Test Column Alignment
+Aligned train and test feature columns
+→ To ensure both datasets have identical feature dimensions after encoding.
+
+14.Correlation Matrix & Heatmap
+Computed .corr() and plotted a heatmap.
+Importance: Visualized relationships between numerical features and detected potential multicollinearity.
+
+Newly heard and learnt:
+OLTP (Online Transaction Processing) – System used for handling real-time transactional operations with high consistency and speed.
+OLAP (Online Analytical Processing) – System used for analyzing large historical datasets to identify patterns and trends.
+Dicing - Applying multiple filters (e.g., protocol + duration range)
+Pivoting - Changing data perspective
+Slicing- Selecting data based on one condition
+
+
+Data visualisation tools used:
+• Bar chart for protocol distribution
+• Histogram for source bytes
+• Boxplot to check outliers
+• Heatmap for protocol vs flag
+• Correlation matrix for numerical features
+• Boxplots comparing duration across classes
+
