@@ -37,8 +37,8 @@ c)SSH
 d)ICMP
 
 Key Observation:
-- Majority of attacks in the dataset are related to TCP traffic.
-- Fewer attacks observed in UDP and ICMP.
+1.Majority of attacks in the dataset are related to TCP traffic.
+2.Fewer attacks observed in UDP and ICMP.
 
 Types of Network Attacks Discussed
 1.DDoS (Distributed Denial of Service)
@@ -76,15 +76,15 @@ Multi-Dimensional Analysis Concepts
 5.Pivoting → Changing data perspective
 
 Purpose:
-- Understand relationships between different categories.
-- Identify patterns between duration, protocol, and attack type.
+1. Understand relationships between different categories.
+2.Identify patterns between duration, protocol, and attack type.
 
 Data Cleaning and Preprocessing:
 
 Data Cleaning
-- Removed duplicate records.
-- Checked missing values.
-- Removed irrelevant or unnecessary features.
+1. Removed duplicate records.
+2.Checked missing values.
+3.Removed irrelevant or unnecessary features.
 
 Feature Engineering
 1. Converted categorical features using encoding.
@@ -92,13 +92,13 @@ Feature Engineering
 3.Normalized numerical features.
 
 Data Preparation:
-- Split dataset into training and testing sets.
-- Ensured proper evaluation setup.
+  1.Split dataset into training and testing sets.
+  2.Ensured proper evaluation setup.
 
 Reason:
--Improve model performance.
-- Avoid bias.
-- Prevent data leakage.
+1.Improve model performance.
+2.Avoid bias.
+3.Prevent data leakage.
 
 Machine Learning Pipeline :
 1. Data Extraction
@@ -136,3 +136,4 @@ Overall Understanding :
 3.Practical knowledge of dataset analysis.
 4.Applied preprocessing techniques.
 5.Understood full ML workflow and evaluation process.
+
