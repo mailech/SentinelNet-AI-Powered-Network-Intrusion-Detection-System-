@@ -1,5 +1,6 @@
 🚨 AI-Powered Network Intrusion Detection System (NIDS)
-📌 Description
+
+ Description
 
 The goal of this project is to build an AI-based Network Intrusion Detection System capable of identifying malicious network traffic and cyber-attacks.
 
