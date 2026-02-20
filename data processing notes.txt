@@ -1,0 +1,49 @@
+data processing notes 
+
+two main files:
+Training dataset
+Testing dataset
+
+Training data is used to train the model.
+Testing data is used to evaluate performance.
+This prevents overfitting and ensures generalization.
+
+The dataset contains records of network connections.
+
+Each record is labeled as either:
+
+Normal traffic
+Attack (Intrusion)
+
+Typical cleaning steps involved:
+Checking for missing values
+Verifying dataset consistency
+Removing unnecessary columns
+
+Some columns contain categorical values:
+protocol type
+service
+flag
+class
+
+definition
+1. TCP (Transmission Control Protocol)
+TCP is a connection-oriented communication protocol used to transmit data reliably over a network. It ensures that data is delivered accurately and in the correct order between sender and receiver
+
+2. Protocol
+A protocol is a set of rules and standards that define how data is transmitted and received over a network. It ensures proper communication between devices.
+
+3. DoS (Denial of Service)
+A Denial of Service (DoS) attack is a type of cyber attack where a system, server, or network is flooded with excessive traffic, making it unavailable to legitimate users.
+
+4. ICMP (Internet Control Message Protocol)
+ICMP is a network protocol used to send error messages and operational information about network conditions. It is commonly used for diagnostic tools like ping.
+
+process till now done
+Download dataset
+Load dataset
+Explore structure
+Clean data
+Encode categorical features
+Separate features and labels
+Prepare training and testing data
