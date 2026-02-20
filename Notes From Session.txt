@@ -129,11 +129,3 @@ Important Consideration:
 6.ETL (Extract, Transform, Load) – Process of collecting data, cleaning/transforming it, and loading it into a system for analysis.
 7.Synthetic Data Addition – Artificially generated data (e.g., timestamps) added to enhance dataset completeness or analysis capability.
 8.Domain Knowledge Importance – Understanding the application domain helps in better feature selection, interpretation, and model performance.
-
-Overall Understanding :
-1.Strong foundation in networking concepts.
-2.Clear understanding of attack behavior.
-3.Practical knowledge of dataset analysis.
-4.Applied preprocessing techniques.
-5.Understood full ML workflow and evaluation process.
-
