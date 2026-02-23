@@ -1,0 +1,99 @@
+SentinelNet – AI-Based Network Intrusion Detection System
+1.Introduction
+In this project, I am developing a Network Intrusion Detection system using machine learning.
+The main goal is to identify whether network traffic is normal or malicious based on different features in the dataset. 
+The primary objective of this project is to design and implement a Machine Learning-based 
+Network Intrusion Detection System (NIDS) capable of classifying network traffic as either normal or malicious.
+The scope of this phase focuses on dataset acquisition, exploratory data analysis, statistical understanding, and preprocessing of network traffic data.
+This forms the foundational stage before implementing classification algorithms.
+
+2.Dataset used
+For this project, I used the NSL-KDD dataset, which is a standard dataset used for intrusion detection research. 
+It contains labeled network traffic records with various features describing each network connection.
+The files used:
+•	KDDTrain+.txt (training dataset
+•	KDDTest+.txt (testing dataset)
+After downloading the dataset, I performed the following steps:
+Imported the dataset using pandas
+Verified dataset dimensions
+Examined sample records
+Identified feature columns and target label
+
+3.Tools and Libraries Used
+•	Python
+•	Jupyter Notebook
+•	Pandas
+•	NumPy
+•	Matplotlib
+
+4.Exploratory Data Analysis (EDA)
+To gain deeper insight into the dataset, I performed systematic exploratory analysis:
+Checked data types using .info()
+Generated statistical summaries using .describe()
+Analyzed class distribution using value counts
+Identified categorical attributes (protocol_type, service, flag)
+Observed distribution patterns in numerical features
+This analysis helped in understanding feature ranges, variance, skewness, and possible feature scaling requirements.
+
+5.Networking Concepts 
+To interpret the dataset correctly, I reviewed essential networking fundamentals such as:
+TCP, UDP, and ICMP protocols
+Port-based communication
+Packet-level transmission
+Connection states and flags
+Basic intrusion patterns  
+
+6.Structural Observations 
+After performing exploratory operations, the following observations were made:
+The dataset contains mixed feature types (categorical and continuous).
+Certain numerical attributes exhibit high variance.
+Attack distribution is not perfectly balanced across categories.
+Some attack types are significantly more frequent than others.
+These observations indicate the need for careful preprocessing and possibly class balancing techniques in later stages.
+
+7. Classification of Attack Categories
+The dataset includes four major categories of attacks:
+ 1.Denial of Service (DoS)
+ 2.Probe
+ 3.Remote to Local (R2L)
+ 4.User to Root (U2R)
+Each category represents a different attack strategy. For example:
+ 1.DoS attacks aim to exhaust system resources.
+ 2.Probe attacks involve scanning and information gathering.
+ 3.R2L attacks attempt unauthorized access from remote machines.
+ 4.U2R attacks escalate privileges after gaining initial access.
+
+8. Analytical Insights
+From exploratory and statistical analysis, several insights were derived:
+Features related to traffic volume (e.g., byte count attributes) show distinguishable patterns between normal and attack traffic.
+Categorical features require encoding before model training.
+Some features may contribute minimal predictive value and can be evaluated during feature selection.
+
+9.Data Preprocessing and Cleaning
+ The following preprocessing steps were performed:
+ -Checked for missing values
+ -Verified duplicate records
+ -Identified categorical and numerical columns
+ -Confirmed consistency in label representation
+Although the NSL-KDD dataset does not contain null values, validation was performed to ensure dataset integrity.
+Future preprocessing steps may include:
+Encoding categorical features
+Feature scaling
+Feature selection
+
+10. Statistical Analysis of Features
+Descriptive statistical measures were computed to understand the behavior of numerical attributes, including:
+1.Mean
+2.Standard deviation
+3.Minimum and maximum values
+4.Quartile distribution
+These measures help in identifying outliers, skewed distributions, and potential normalization requirements.
+
+11. Data Validation and Integrity Verification
+To ensure reliability before model training, the following validation checks were performed:
+Verified dataset dimensions
+Ensured correct labeling of attack categories
+Confirmed absence of null values
+Checked data type consistency
+This validation process ensures that the dataset is structured, clean, and ready for feature engineering and model development.
+
