@@ -1,0 +1,119 @@
+SENTINELNET - AI BASED NETWORK INTRUSION DETECTION SYSTEM
+
+PROJECT INTRODUCTION
+SentinelNet is an AI-driven Network Intrusion Detection System developed using the NSL-KDD dataset. The purpose of this project is to automatically detect whether network traffic is normal or malicious by analyzing various network features. The system applies machine learning techniques to identify suspicious patterns and generate alerts for potential cyber threats.
+
+PROJECT OBJECTIVES
+1.Develop a machine learning model for intrusion detection.
+2.Classify network traffic as Normal or Attack.
+3.Analyze traffic behavior to detect anomalies.
+4.Reduce false alarms while improving detection accuracy.
+5.Generate alerts for suspicious activities.
+
+PROBLEM OVERVIEW
+Modern networks constantly exchange large volumes of data. Within this communication, cyber-attacks may occur. Traditional rule-based detection systems struggle to detect new or unknown attacks. Machine learning provides a data-driven solution by learning patterns directly from network traffic.
+Main task: Traffic Classification .  
+
+NETWORKING BASICS
+
+TCP (Transmission Control Protocol)
+.Connection-oriented protocol
+.Uses three-way handshake
+.Reliable communication
+.Slower due to verification
+
+Common in web services
+.UDP (User Datagram Protocol)
+.Connectionless protocol
+.Faster transmission
+.No delivery guarantee
+.Used in real-time applications
+
+Other Protocols:
+HTTP, HTTPS, DNS, SSH, ICMP
+
+ATTACK TYPES COVERED
+.Distributed Denial of Service (DDoS)
+.Brute Force Attacks
+.Port Scanning
+.Injection Attacks
+.SYN Flood
+
+TOOLS USED
+.Python
+.Jupyter Notebook
+.Pandas
+.NumPy
+.Matplotlib
+
+DATA PREPROCESSING STEPS
+1.Imported required libraries.
+2.Created data directory to organize dataset files.
+3.Loaded NSL-KDD training and testing datasets.
+4.Assigned column names for clarity.
+5.Performed initial inspection using head(), info(), describe().
+6.Checked for duplicate records.
+7.Verified absence of missing values.
+8.Analyzed class distribution.
+9.Converted multi-class labels to binary format.
+10.Removed unnecessary features such as difficulty_level.
+11.Identified categorical features (protocol_type, service, flag).
+12.Applied One-Hot Encoding.
+13.Aligned train and test feature columns.
+14.Generated correlation matrix and heatmap.
+
+DATA VISUALIZATION
+.Bar chart for protocol distribution.
+.Histogram for source bytes.
+.Boxplot for outlier detection.
+.Heatmap for protocol vs flag analysis.
+.Correlation matrix for numerical relationships.
+.Boxplots comparing duration across classes.
+
+MULTI-DIMENSIONAL ANALYSIS
+.Slicing: Filtering using one condition.
+.Dicing: Applying multiple filters.
+.Roll-up: Aggregating data.
+.Drill-down: Viewing detailed data.
+.Pivoting: Changing data perspective.
+
+MACHINE LEARNING PIPELINE
+1.Data Extraction
+2.Data Cleaning
+3.Feature Engineering
+4.Model Training
+5.Model Evaluation
+6.Prediction and Alert Generation
+
+EVALUATION METRICS
+Confusion Matrix:
+TP, FP, TN, FN
+Performance Metrics:
+Accuracy
+Precision
+Recall
+F1-Score
+ROC Curve
+Important:
+Reducing False Negatives is critical in intrusion detection.
+
+ADDITIONAL CONCEPTS
+OLTP - Real-time transaction processing system.
+OLAP - Analytical processing system for historical data.
+ETL - Extract, Transform, Load process.
+Data Warehousing - Centralized storage for analysis.
+Domain Knowledge - Helps in better feature selection and interpretation.
+
+1.Feature Engineering Performed
+.Created total_bytes (src_bytes + dst_bytes).
+.Computed src_bytes_ratio to analyze traffic direction.
+.Calculated packet_rate using count and duration.
+.Created byte_difference feature.
+.Converted error flags into binary indicator (is_error_flag).
+.Generated same service interaction feature.
+
+2.Encoding Improvements
+.Applied One-Hot Encoding on protocol_type and flag.
+.Used frequency encoding for service feature.
+.Removed original categorical columns after encoding.
+.Ensured train and test datasets had identical feature columns.
