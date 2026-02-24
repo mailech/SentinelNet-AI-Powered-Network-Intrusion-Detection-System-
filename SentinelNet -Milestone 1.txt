@@ -1,0 +1,98 @@
+SentinelNet — Milestone 1
+Network Intrusion Detection using NSL-KDD Dataset
+
+
+What is this project about?
+
+  - Building a system that detects whether network traffic is normal or an attack.
+  - Uses machine learning instead of manual rules to detect attack.
+  - Dataset used: NSL-KDD — contains network connection records.
+  - Each record is classified as normal or one of 4 attack types.
+
+
+Why does this matter?
+
+  - Networks exchange data constantly and attacks hide inside normal traffic.
+  - Rule-based systems fail against new or unseen attack types.
+  - ML models learn from historical data and can catch patterns rules would miss.
+
+
+Understanding the Data
+
+  - Dataset comes as plain text files with no headers — 43 columns assigned manually.
+  - Grouped into 5 final categories:
+      - normal   — regular traffic.
+      - DoS      — flooding attacks (neptune, smurf, teardrop, mailbomb).
+      - Probe    — network scanning (nmap, portsweep, ipsweep, satan).
+      - R2L      — unauthorized remote access (guess_passwd, ftp_write, imap).
+      - U2R      — privilege escalation attacks (buffer_overflow, rootkit, perl).
+
+
+Networking Concepts We Used
+
+  - TCP: connection-oriented, uses 3-way handshake, most targeted by attacks.
+  - UDP: faster, no delivery guarantee, fewer attacks in the dataset.
+  - ICMP: used for diagnostics like ping, least attacked protocol.
+  - Connection Flags matter a lot:
+      - SF  = connection completed normally.
+      - S0  = connection attempted but no response (suspicious).
+      - REJ = connection was rejected.
+      - S1, S2, S3 = partially established (suspicious).
+
+
+Exploratory Data Analysis
+
+  - Checked train and test sets — zero missing values found.
+  - Checked for duplicates in both datasets.
+  - Class distribution showed heavy imbalance — DoS is most common, U2R is rarest.
+  - Analyzed traffic counts per protocol (TCP, UDP, ICMP).
+  - Calculated average connection duration per protocol.
+  - Examined src_bytes — found extreme right skew with most values near zero.
+  - Visualizations produced:
+      - Bar chart: traffic volume by protocol.
+      - Histogram: src_bytes distribution.
+      - Box plot: src_bytes outliers grouped by protocol.
+      - Heatmap: protocol vs connection flag crosstab.
+      - Before/after histograms of log-transformed src_bytes.
+
+
+Outlier Detection
+
+  - Used Isolation Forest on all numerical features.
+  - Works by isolating abnormal points using random splits — easier to isolate = more abnormal.
+  - Contamination rate set to 1% (contamination=0.01).
+  - Each record flagged: 1 = normal, -1 = outlier.
+  - Stored result in a new column: is_outlier.
+  - Scatter plot generated — src_bytes vs dst_bytes on log scale, colored by outlier status.
+
+
+Skewness Analysis & Log Transformation
+
+  - Three columns were heavily skewed: duration, src_bytes, dst_bytes.
+  - Skewness measured before transformation for all three.
+  - Applied log(1+x) transformation — compresses large values, preserves zeros.
+  - Skewness measured again after transformation.
+  - Printed a comparison table: original skew vs transformed skew.
+  - Generated before/after distribution plots for each column.
+  - Correlation heatmap plotted between original and log-transformed versions.
+  - New columns added permanently: log_duration, log_src_bytes, log_dst_bytes.
+
+
+Feature Engineering — 6 New Features Created
+
+  - total_bytes = src_bytes + dst_bytes
+       Captures total connection volume.
+  - src_bytes_ratio = src_bytes / (total_bytes + 1e-5)
+       Ratio close to 1 suggests one-sided traffic, common in DoS.
+  - packet_rate = count / (duration + 1e-5)
+       High rate in short duration is a red flag.
+  - byte_diff = |src_bytes - dst_bytes|
+       Large difference means asymmetric connection, can indicate attack.
+  - is_error_flag = 1 if flag in [S0, S1, S2, S3, REJ] else 0
+       Binary feature marking suspicious connection states.
+  - same_srv_interaction = same_srv_rate × dst_host_same_srv_rate
+       Low values on both sides suggest unusual behavior patterns.
+
+
+
+
