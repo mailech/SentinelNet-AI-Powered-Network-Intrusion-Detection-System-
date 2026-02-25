@@ -1,0 +1,218 @@
+SENTINELNET – AI BASED NETWORK INTRUSION DETECTION SYSTEM
+==========================================================
+
+PROJECT INTRODUCTION
+--------------------
+SentinelNet is an AI-driven Network Intrusion Detection System developed using the NSL-KDD dataset.
+The main objective of this project is to automatically identify whether network traffic is NORMAL or MALICIOUS
+by analyzing multiple network-related features. The system applies machine learning techniques to detect
+cyber-attacks and generate alerts for suspicious activities.
+
+PROJECT OBJECTIVES
+------------------
+1. Develop a machine learning model for intrusion detection.
+2. Classify network traffic into Normal or Attack categories.
+3. Analyze traffic behavior to detect anomalies.
+4. Reduce false alarms while improving detection accuracy.
+5. Generate alerts for suspicious network activities.
+
+PROBLEM OVERVIEW
+----------------
+Modern computer networks continuously exchange large amounts of data. Cyber-attacks can occur during
+this communication, making security monitoring essential. Traditional rule-based systems struggle to detect
+new or unknown attack patterns. Machine learning provides a data-driven approach by learning patterns
+directly from network traffic data.
+
+Main Task:
+Traffic Classification (Normal vs Attack)
+
+TOOLS AND LIBRARIES USED
+------------------------
+- Python
+- Jupyter Notebook
+- Pandas
+- NumPy
+- Matplotlib
+- Seaborn
+
+DATASET
+-------
+NSL-KDD Dataset
+Files used:
+- KDDTrain+.txt
+- KDDTest+.txt
+
+MILESTONE 1 – DATA LOADING & PREPROCESSING
+-------------------------------------------
+SYSTEMATIC FLOW OF WORK COMPLETED:
+
+1. Libraries Imported
+   Imported pandas, numpy, matplotlib, seaborn, and related libraries
+   to enable data analysis and preprocessing.
+
+2. Data Directory Creation
+   Created a local data/ folder to organize dataset files systematically.
+
+3. Dataset Download
+   Downloaded KDDTrain+.txt and KDDTest+.txt from NSL-KDD dataset.
+
+4. Column Name Assignment
+   Defined dataset column names explicitly for proper feature understanding.
+
+5. Loading Dataset into DataFrames
+   Loaded training and testing datasets using pd.read_csv().
+
+6. Initial Data Inspection
+   Used head(), info(), describe(), and duplicate checks
+   to understand dataset structure and detect inconsistencies.
+
+7. Missing Value Verification
+   Checked for null values to ensure data completeness.
+
+8. Class Distribution Analysis
+   Visualized normal vs attack traffic distribution using bar plots.
+
+9. Binary Label Conversion
+   Converted multi-class labels into:
+      normal = 0
+      attack = 1
+   to simplify the classification task.
+
+10. Removal of Irrelevant Feature
+    Dropped difficulty_level column as it does not contribute to modeling.
+
+11. Categorical Feature Identification
+    Identified:
+      - protocol_type
+      - service
+      - flag
+    as categorical features.
+
+12. One-Hot Encoding
+    Applied pd.get_dummies() to convert categorical data into numerical format.
+
+13. Train-Test Column Alignment
+    Ensured train and test datasets had identical feature dimensions.
+
+14. Correlation Matrix & Heatmap
+    Generated correlation matrix and heatmap to visualize relationships between features.
+
+DATA VISUALIZATION USED
+-----------------------
+- Bar chart for protocol distribution
+- Histogram for source bytes
+- Boxplot for outlier detection
+- Heatmap for protocol vs flag analysis
+- Correlation matrix for numerical relationships
+- Boxplots comparing duration across classes
+
+NETWORKING BASICS
+-----------------
+TCP (Transmission Control Protocol)
+- Connection-oriented
+- Uses three-way handshake
+- Reliable but slower due to verification
+
+UDP (User Datagram Protocol)
+- Connectionless
+- Faster transmission
+- No delivery guarantee
+- Common in real-time applications
+
+Other protocols:
+HTTP, HTTPS, DNS, SSH, ICMP
+
+ATTACK TYPES COVERED
+--------------------
+- Distributed Denial of Service (DDoS)
+- Brute Force Attacks
+- Port Scanning
+- Injection Attacks
+- SYN Flood
+
+MULTI-DIMENSIONAL ANALYSIS CONCEPTS
+-----------------------------------
+- Slicing   : Filtering based on one condition
+- Dicing    : Applying multiple filters
+- Roll-up   : Data aggregation
+- Drill-down: Viewing detailed data
+- Pivoting  : Changing data perspective
+
+MACHINE LEARNING PIPELINE
+-------------------------
+1. Data Extraction
+2. Data Cleaning
+3. Feature Engineering
+4. Model Training
+5. Model Evaluation
+6. Prediction and Alert Generation
+
+FEATURE ENGINEERING PERFORMED
+-----------------------------
+- Created total_bytes (src_bytes + dst_bytes)
+- Computed src_bytes_ratio for traffic direction analysis
+- Calculated packet_rate using count and duration
+- Created byte_difference feature
+- Converted error flags into binary indicator (is_error_flag)
+- Generated same service interaction feature
+
+ENCODING IMPROVEMENTS
+---------------------
+- One-Hot Encoding for protocol_type and flag
+- Frequency encoding for service feature
+- Removed original categorical columns after encoding
+- Ensured train and test data consistency
+
+EVALUATION METRICS
+------------------
+Confusion Matrix:
+- True Positive (TP)
+- False Positive (FP)
+- True Negative (TN)
+- False Negative (FN)
+
+Performance Metrics:
+- Accuracy
+- Precision
+- Recall
+- F1-Score
+- ROC Curve
+
+Important:
+Reducing False Negatives is critical in intrusion detection systems.
+
+ADDITIONAL CONCEPTS LEARNED
+---------------------------
+- OLTP (Online Transaction Processing):
+  Real-time transaction systems with high consistency.
+
+- OLAP (Online Analytical Processing):
+  Analytical systems used for large-scale historical analysis.
+
+- ETL (Extract, Transform, Load):
+  Process for preparing data for analysis.
+
+- Data Warehousing:
+  Centralized storage system for analytical processing.
+
+- Domain Knowledge:
+  Helps in better feature selection and interpretation.
+
+PROJECT STATUS
+--------------
+Completed:
+- Data Loading
+- Data Cleaning
+- Preprocessing
+- Feature Engineering
+- Visualization
+
+Next Steps:
+- Model Selection
+- Model Training
+- Hyperparameter Tuning
+- Performance Evaluation
+- Deployment and Alert System Integration
+
+---------------------------------------------------------------
+SentinelNet - AI Based Network Intrusion Detection System
