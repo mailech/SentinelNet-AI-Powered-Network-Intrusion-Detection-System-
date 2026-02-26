@@ -2,4 +2,4 @@
 /data/.ipynb_checkpoints
 .SenitalNet/data/processed/.ipynb_checkpoints
 .SenitalNet/data/raw/.ipynb_checkpoints
-..SentinelNet/data/processed/train_processed_advanced.csv
+.SentinelNet/data/processed/train_processed_advanced.csv
