@@ -1,0 +1,73 @@
+Objective
+
+    The objective of feature-level exploration was to:
+    Understand behavioral characteristics of network traffic.
+    Identify discriminative features for intrusion detection.
+    Detect skewness, anomalies, and statistical irregularities.
+    Prepare features for machine learning modeling.
+
+Dataset Loading
+
+     NSL-KDD dataset successfully loaded into Jupyter Notebook.
+     Training and testing datasets imported using pandas.
+
+Initial Data Exploration (EDA) 
+
+    Performed basic exploratory data analysis:
+    Checked dataset structure using:
+    .head()
+    .info()
+    .describe()
+    Verified data types (categorical vs numerical).
+    Checked for missing values.
+    Examined class label distribution (Normal vs Attack).
+
+Protocol Analysis
+
+    Analyzed protocol_type column.
+    Used value_counts() to observe distribution of:
+    TCP
+    UDP
+    ICMP
+    Visualized protocol distribution using plots.
+    Observed that TCP traffic dominates the dataset.
+
+Attack Distribution Analysis
+
+    Analyzed class label column.
+    Checked frequency of normal vs attack traffic.
+    Observed class imbalance.
+    Identified dominant attack categories (e.g., DoS-type attacks).
+
+Focused on important features:
+    duration - Length of time (in seconds) of the network connection.
+
+    src_bytes - Number of data bytes transferred from source to destination.
+
+    dst_bytes - Number of data bytes transferred from destination to source.
+
+    protocol_type - Kaunsa network protocol use hua connection me.
+       TCP (Transmission Control Protocol)
+       UDP (User Datagram Protocol)
+       ICMP
+
+    service -Which network service is accessed.
+       http
+       ftp
+       smtp
+       telnet
+       ssh
+       domain (DNS)
+
+    flag - What is the status of TCP connection.
+       SF → Normal connection completed
+       S0 → Connection attempt but no reply
+       REJ → Connection rejected
+       RSTO → Connection reset
+
+Visualization Improvements
+
+    Created clear and structured plots.
+    Increased figure size for readability.
+    Added proper titles and labels.
+    Reduced clutter in graphs.       
