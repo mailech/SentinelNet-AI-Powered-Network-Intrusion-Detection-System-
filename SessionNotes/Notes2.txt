@@ -1,0 +1,80 @@
+Network Attack Detection – Feature Engineering & Model Training
+
+1)Pipeline for Network Attack Detection
+The project focuses on building a pipeline for network attack detection.
+The work includes:
+1. Correlation analysis and feature selection
+2. Handling multicollinearity
+3. Class imbalance treatment using SMOTE
+4. Model training and evaluation
+5. Noise removal and dataset optimization
+
+Goal:
+To improve model generalization while avoiding overfitting and redundant information.
+
+2)Correlation Matrix Optimization
+Process:
+1. Generated a square, symmetric correlation matrix.
+2. Created a mask of ones with the same shape.
+3. Applied an upper-triangle operation(k=1) to retain only values above the diagonal.
+4. Converted the mask to boolean.
+5. Indexed the matrix using the mask to drop redundant lower-triangle and diagonal values.
+
+Reason:
+1. Correlation matrices duplicate feature pairs (A-B and B-A), so we only need one copy.
+2. Removing highly correlated features reduces multicollinearity and improves model stability.
+
+3)Feature Selection and Noise Removal
+Removed noisy and redundant features using:
+1. Correlation Analysis
+2. Mutual Information
+3. Recursive Feature Elimination (RFE)
+
+Objective:
+1. Remove features that do not add new information.
+2. Drop one feature from highly correlated pairs.
+3. Improve model interpretability and performance.
+
+4)Handling Class Imbalance
+The dataset contains multiple attack techniques and combinations. Since minority classes are underrepresented, the following techniques were compared:
+1.Random Oversampling
+   a)Simply duplicates minority samples.
+      Risk: Overfitting(model memorizes repeated data).
+2.SMOTE(Synthetic Minority Oversampling Technique)
+a)Generates synthetic minority samples.
+b)Creates smoother decision boundaries.
+c)Less sensitive to outliers.
+d)Best suited for noisy network data.
+
+Risk(in general oversampling approaches):
+May over-amplify noise and outliers.
+
+Chosen Approach: SMOTE
+Reason:
+1. Balanced synthetic distribution
+2. Better generalization
+3. Safer for noisy raw network traffic
+
+5)Model Training Strategy
+1. Apply SMOTE first (handle imbalance).
+2. Then apply scaling where necessary.
+3. Train models.
+Scaling Notes:
+1. Logistic Regression → Benefits from feature scaling.
+2. Random Forest → Less sensitive to scaling.
+
+6)Encoder Training Approach
+Benefits:
+1. Prevents data leakage.
+2. Keeps feature representation isolated.
+
+Limitation:
+1. Loses cross-feature interaction patterns.
+
+7)Data Transfer Optimization
+If data pull from previous sales or logs is slow due to network lag:
+1. Filter data server-side.
+2. Pull only required columns.
+3. Cache locally after first load.
+4. Batch requests if needed.
+5. Run heavy transfers during off-peak hours.
