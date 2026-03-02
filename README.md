@@ -52,9 +52,21 @@ This project focuses on building an AI-based Network Intrusion Detection System 
 
 ---
 
+## Week 3 – Feature Engineering & Selection
+
+* Established baseline model performance.
+* Computed feature importance using Random Forest.
+* Verified stability of feature importance across runs.
+* Applied Top-N feature selection strategy.
+* Applied threshold-based feature selection strategy.
+* Compared model performance before and after feature reduction.
+* Evaluated recall metric (critical for intrusion detection).
+* Analyzed distribution of most important features.
+
+---
+
 ## 🚀 Next Steps
 
-* Feature engineering and selection
 * Model training (Random Forest, SVM, Logistic Regression)
 * Model evaluation (Precision, Recall, F1-score)
 * Alert generation and logging
