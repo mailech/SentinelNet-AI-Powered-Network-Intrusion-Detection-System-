@@ -78,3 +78,43 @@ Protocol vs Flag heatmap
 🔎 Data Quality Checks
 
 Checked missing values in src_bytes
+
+
+
+
+🚀 Milestone 2: Feature Engineering & Data Optimization
+📌 Overview
+
+This milestone focuses on transforming the raw network intrusion dataset into a structured, balanced, and optimized feature set suitable for machine learning model training.
+
+The preprocessing pipeline enhances data quality, reduces redundancy, and improves model efficiency.
+
+Feature Scaling
+
+Numerical features were normalized using StandardScaler to ensure uniform distribution across variables and to prepare the dataset for dimensionality reduction techniques.
+
+One-Hot Encoding
+
+Categorical attributes such as protocol type, service, and flag were converted into numerical format using OneHotEncoder, enabling compatibility with machine learning algorithms.
+
+Feature Engineering & Aggregation
+
+New derived features were created by aggregating and combining related network traffic attributes, including byte-level and packet-level interactions. These transformations enhance the representation of network behavior patterns.
+
+Correlation Analysis & Redundancy Removal
+
+A correlation matrix was computed to identify highly correlated features. Columns exceeding the defined correlation threshold were removed to eliminate redundancy and reduce multicollinearity.
+
+Noise Reduction
+
+Low-variance features and irrelevant attributes were filtered out to improve the signal-to-noise ratio and optimize the dataset for training.
+
+Class Imbalance Handling (SMOTE)
+
+The dataset was balanced using SMOTE (Synthetic Minority Over-sampling Technique) to address class imbalance between normal and attack traffic. Synthetic samples were generated for minority classes to ensure fair model learning.
+
+Dimensionality Reduction (PCA)
+
+Principal Component Analysis (PCA) was applied after scaling to reduce dimensionality while retaining maximum variance. This step improved computational efficiency and simplified the feature space.
+
+Final optimized feature count: 36 features/components
