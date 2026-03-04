@@ -1,0 +1,183 @@
+SENTINELNET - NETWORK ATTACK DETECTION
+FEATURE ENGINEERING & MODEL TRAINING
+==========================================================
+
+PROJECT CONTEXT
+---------------
+This stage of the SentinelNet project focuses on improving the machine learning
+pipeline for detecting network attacks using the NSL-KDD dataset.
+
+This milestone includes:
+- Feature selection
+- Correlation analysis
+- Handling class imbalance
+- Model training
+- Dataset optimization
+
+Goal:
+Improve model accuracy and generalization while reducing redundant features,
+noise, and overfitting.
+
+
+1. PIPELINE FOR NETWORK ATTACK DETECTION
+----------------------------------------
+A structured machine learning pipeline was implemented for attack detection.
+
+Pipeline Steps:
+1. Correlation analysis
+2. Feature selection
+3. Handling multicollinearity
+4. Class imbalance treatment using SMOTE
+5. Model training
+6. Model evaluation
+7. Dataset optimization
+
+Purpose:
+To prepare a clean dataset that improves machine learning performance.
+
+
+2. CORRELATION MATRIX OPTIMIZATION
+----------------------------------
+A correlation matrix was generated to analyze relationships between numerical features.
+
+Process:
+1. Created a square symmetric correlation matrix.
+2. Generated a mask matrix with the same shape.
+3. Applied an upper triangular operation (k = 1).
+4. Converted the mask into boolean values.
+5. Selected only the upper triangle values to avoid duplicates.
+
+Reason:
+Correlation matrices contain duplicate feature relationships such as:
+Feature A vs Feature B
+Feature B vs Feature A
+
+Keeping only one copy helps remove redundancy.
+
+Benefits:
+- Reduces multicollinearity
+- Improves model stability
+- Simplifies feature selection
+
+
+3. FEATURE SELECTION AND NOISE REMOVAL
+--------------------------------------
+Different techniques were used to remove noisy and redundant features.
+
+Methods Used:
+
+1. Correlation Analysis
+   Removed highly correlated features.
+
+2. Mutual Information
+   Identified features that contribute most to predicting the target variable.
+
+3. Recursive Feature Elimination (RFE)
+   Iteratively removed weak features using model-based importance.
+
+Objectives:
+- Remove features that add little information.
+- Reduce dataset dimensionality.
+- Improve model interpretability.
+- Increase prediction performance.
+
+
+4. HANDLING CLASS IMBALANCE
+---------------------------
+Network intrusion datasets often contain more normal traffic than attack traffic.
+
+Techniques Compared:
+
+1. Random Oversampling
+   - Duplicates minority samples.
+
+   Risk:
+   May cause overfitting because repeated samples are memorized.
+
+2. SMOTE (Synthetic Minority Oversampling Technique)
+   - Generates synthetic minority samples.
+   - Creates smoother decision boundaries.
+   - Handles noisy data better.
+
+Chosen Method: SMOTE
+
+Reasons:
+- Balanced dataset distribution
+- Better generalization
+- Suitable for network traffic datasets
+
+Note:
+Oversampling methods must be applied carefully because they may amplify noise.
+
+
+5. MODEL TRAINING STRATEGY
+--------------------------
+After preparing the dataset, machine learning models were trained.
+
+Training Pipeline:
+1. Apply SMOTE to balance the dataset.
+2. Apply feature scaling when required.
+3. Train machine learning models.
+4. Evaluate model performance.
+
+Models Used:
+
+Logistic Regression
+- Linear classification algorithm.
+- Works well with scaled features.
+- Useful for baseline performance comparison.
+
+Random Forest
+- Ensemble tree-based algorithm.
+- Builds multiple decision trees.
+- Combines predictions using majority voting.
+- Handles non-linear relationships effectively.
+- Less sensitive to feature scaling.
+
+Advantages of Random Forest:
+- High accuracy
+- Robust to noisy data
+- Reduces overfitting through ensemble learning
+- Automatically estimates feature importance
+
+
+6. ENCODER TRAINING APPROACH
+----------------------------
+Categorical encoders were trained carefully to avoid data leakage.
+
+Benefits:
+- Prevents the model from learning information from test data.
+- Keeps training and testing features independent.
+
+Limitation:
+Encoding features separately may reduce cross-feature interaction patterns.
+
+
+7. DATA TRANSFER OPTIMIZATION
+-----------------------------
+When working with large datasets, efficient data transfer becomes important.
+
+Optimization strategies used:
+
+1. Filter data directly on the server.
+2. Retrieve only required columns.
+3. Cache datasets locally after first load.
+4. Use batch requests when transferring large data.
+5. Perform heavy data transfers during off-peak hours.
+
+These steps help improve processing efficiency.
+
+
+PROJECT IMPROVEMENTS ACHIEVED
+-----------------------------
+- Reduced redundant features
+- Removed noisy attributes
+- Handled class imbalance using SMOTE
+- Improved dataset quality
+- Prepared dataset for machine learning models
+- Applied Logistic Regression and Random Forest for attack detection
+
+
+----------------------------------------------------------
+SentinelNet - AI Based Network Intrusion Detection System
+Feature Engineering & Model Training Milestone
