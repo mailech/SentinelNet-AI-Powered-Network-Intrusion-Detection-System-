@@ -1,0 +1,167 @@
+SentinelNet — Milestone 2
+Feature Selection, Class Imbalance & Dimensionality Reduction
+
+
+Tasks Completed
+
+  - Removed noisy and redundant features from the dataset.
+  - Ranked features by importance using Random Forest.
+  - Scaled features using RobustScaler.
+  - Fixed class imbalance using SMOTE (oversampling on train only).
+  - Visualised class separation using PCA scatter plot.
+  - Saved the final processed data for modelling.
+  - Loaded saved data in a new notebook and re-ranked features on the
+    full resampled dataset.
+  - Plotted top 25 features and identified low importance ones.
+
+
+Categorical Encoding
+
+  - One-Hot Encoding applied to protocol_type and flag.
+      - OneHotEncoder(sparse_output=False, handle_unknown='ignore').
+      - Fitted on train, applied to test — never fit on test data.
+      - New binary columns created for each unique value.
+  - Frequency Encoding applied to service (70 unique values).
+      - Each service replaced by how often it appeared in training data.
+      - Unseen test services filled with 0.
+  - Original columns protocol_type, flag, service dropped after encoding.
+  - Printed final shapes for both train and test encoded DataFrames.
+
+
+Preparing the Feature Matrix
+
+  - Target column attack_class encoded to integers using LabelEncoder.
+  - Metadata columns dropped from feature matrix:
+      - label, difficulty_level, attack_class, is_outlier.
+  - Created X_train_fs and X_test_fs as the clean feature matrices.
+  - X_test_fs aligned to train columns using reindex(fill_value=0)
+    to handle any missing columns in test.
+  - Printed total feature count before any selection.
+
+
+Noise Removal — High Correlation Filter
+
+  - Computed absolute correlation matrix across all features.
+  - Extracted upper triangle to avoid counting pairs twice.
+  - Features with pairwise correlation above 0.95 identified and dropped.
+  - Two features that are 95%+ correlated carry the same information —
+    keeping both adds noise without adding new signal.
+  - Printed count and names of removed features.
+  - Printed remaining feature count after removal.
+  - Correlation heatmap plotted after removal to visually confirm
+    the remaining features are more independent of each other.
+
+
+Noise Removal — Low Variance Filter
+
+  - VarianceThreshold(threshold=0.01) applied to all numeric columns.
+  - Features with variance below 0.01 barely change across samples —
+    they carry almost no useful information for the model.
+  - Fitted on training data only, same columns dropped from test.
+  - Printed count and names of removed features.
+  - Printed remaining feature count after removal.
+
+
+Feature Importance using Random Forest
+
+  - Sampled 30,000 rows from training data for speed.
+  - RandomForestClassifier(n_estimators=100, max_depth=10, random_state=42, n_jobs=-1).
+  - Built a ranked importance DataFrame for all remaining features.
+  - Printed top 20 features with their importance scores.
+  - Plotted top 20 as a horizontal bar chart (viridis palette, figsize 10x7).
+  - Applied importance threshold of 0.001:
+      - Features scoring >= 0.001 kept.
+      - Features scoring <  0.001 dropped as low-signal noise.
+  - Printed final selected and removed feature counts.
+
+
+Scaling
+
+  - RobustScaler applied to all selected features.
+  - Uses median and IQR instead of mean and standard deviation.
+  - Less sensitive to extreme outliers compared to StandardScaler.
+  - Fitted on train data only, then applied to test — no data leakage.
+
+
+Handling Class Imbalance — SMOTE
+
+  What is SMOTE?
+    - SMOTE = Synthetic Minority Over-sampling Technique.
+    - Generates new synthetic samples for minority classes by
+      interpolating between existing nearby samples (k_neighbors=5).
+    - Does not just copy samples — creates realistic new data points.
+
+  Why it was needed:
+    - DoS had tens of thousands of samples.
+    - U2R had only a few dozen.
+    - Without balancing, models become biased toward majority classes
+      and effectively ignore rare attack types like U2R.
+
+  How it was applied:
+    - SMOTE(k_neighbors=5, random_state=42) applied to X_train only.
+    - Test set left completely untouched — SMOTE never applied to test.
+    - Printed class counts before and after to confirm balancing.
+    - Side-by-side countplot generated — Before vs After SMOTE.
+
+
+Dimensionality Reduction — PCA Scatter Plot
+
+  - PCA(n_components=2) applied  post-SMOTE.
+  - 2 components used purely for visualisation — not for modelling.
+  - Scatter plot: PC1 vs PC2, each attack class in a different color.
+  - Axis labels show % variance explained by each component.
+  - Helps visually confirm how well the 5 attack classes separate.
+
+
+Saving Processed Data
+
+  Saved to: ./data/processed/
+
+    train_processed_advanced.csv  — Final training set (post SMOTE).
+    test_processed_advanced.csv   — Final test set (no SMOTE applied).
+    feature_importance.csv        — All features ranked by RF importance.
+
+  Note:
+    - SMOTE applied only to train — test kept as real unseen data.
+    - Test columns aligned to train using reindex to avoid shape mismatch.
+
+
+Week 4 — Feature Selection on Full Resampled Data
+
+  - Loaded train_processed_advanced.csv from ./data/processed/.
+  - Dataset: 336,715 rows × 34 feature columns (result of SMOTE).
+  - All 5 classes balanced at 67,343 samples each.
+  - Split into X_resampled (features) and y_raw (target).
+
+  Target Label Encoding:
+    - y_raw contained string labels: normal, DoS, Probe, R2L, U2R.
+    - LabelEncoder used to convert to integers (0 to 4):
+        - data = y_raw
+        - var  = LabelEncoder()
+        - data = var.fit_transform(data)
+
+  Random Forest on Full Dataset:
+    - Trained on full X_resampled (336,715 rows) — no sampling.
+    - parameter = RandomForestClassifier(n_estimators=100, random_state=42, max_depth=10)
+    - parameter.fit(X_resampled, data)
+    - Took longer due to full dataset size — waited for completion.
+
+  Feature Importance Series:
+    - v = pd.Series(parameter.feature_importances_, index=X_resampled.columns)
+    - importance = v.sort_values(ascending=False)
+    - Printed top 25 features with scores.
+
+  Visualisations:
+    - Horizontal bar chart: top 25 features (viridis palette, figsize 10x8).
+    - Threshold cutoff line chart:
+        - Blue line: all feature importances sorted descending.
+        - Red dashed line at threshold = 0.001.
+        - Red shaded area below threshold showing features to drop.
+
+  Low Importance Features:
+    - threshold      = 0.001
+    - low_importance = importance[importance < threshold]
+    - Printed count and names of all low importance features.
+    - selected_features = importance[importance >= threshold].index.tolist()
+    - Printed count of features kept vs dropped.
+
