@@ -78,3 +78,4 @@ If data pull from previous sales or logs is slow due to network lag:
 3. Cache locally after first load.
 4. Batch requests if needed.
 5. Run heavy transfers during off-peak hours.
+
