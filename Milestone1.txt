@@ -1,0 +1,176 @@
+
+SENTINELNET – AI BASED NETWORK INTRUSION DETECTION SYSTEM
+==========================================================
+
+Milestone 1 – Dataset Understanding and Exploratory Analysis
+
+
+1. Introduction
+---------------
+The objective of SentinelNet is to build an AI-based Network Intrusion Detection System (NIDS) that can classify network traffic as either Normal or Malicious. The system is being developed using the NSL-KDD dataset, which contains labeled network connection records representing various types of cyber-attacks.
+
+This milestone primarily focused on understanding the dataset, validating its structure, and performing exploratory data analysis (EDA) to identify important patterns in the network traffic data.
+
+
+2. Dataset Description
+----------------------
+Dataset Used: NSL-KDD
+
+Files:
+- KDDTrain+.txt
+- KDDTest+.txt
+
+The dataset contains:
+- 41 network-related features
+- 1 target label (class)
+- 1 difficulty_level column
+
+Each record represents a network connection with attributes such as:
+duration, protocol_type, service, flag, src_bytes, dst_bytes, count, srv_count, and other traffic-related features.
+
+These attributes describe characteristics of a network session and help identify whether the connection is normal or malicious.
+
+
+3. Work Completed in Milestone 1
+--------------------------------
+
+A. Data Loading and Structuring
+- Created a dedicated data directory to organize dataset files.
+- Downloaded the training and testing datasets.
+- Manually assigned column names since the dataset does not contain headers.
+- Loaded datasets using pandas.
+- Verified dataset shape and structure.
+- Inspected data types and summary statistics using .info() and .describe().
+
+B. Data Validation
+- Checked for missing values in all columns.
+- Verified that important features such as src_bytes contain no null values.
+- Confirmed that zero values represent valid network behavior, not missing data.
+- Checked for duplicate records to ensure data integrity.
+
+
+4. Exploratory Data Analysis (EDA)
+----------------------------------
+
+A. Class Distribution
+- Analyzed the distribution of normal and attack classes.
+- Observed significant class imbalance in the dataset.
+- Noted that certain attack types appear much more frequently than others.
+
+B. Protocol-Level Analysis
+- Studied traffic distribution across TCP, UDP, and ICMP protocols.
+- Observed that most attack traffic is associated with TCP protocol.
+- Explored relationships between protocol type and attack occurrence.
+
+C. Feature Distribution Analysis
+- Examined numerical features such as:
+  duration
+  src_bytes
+  dst_bytes
+  count
+  srv_count
+- Observed that src_bytes is highly right-skewed.
+- Identified the presence of extreme outliers in byte-related features.
+
+D. Log Transformation
+- Applied log(1 + x) transformation to src_bytes.
+- Purpose:
+  * Reduce skewness
+  * Compress extreme values
+  * Preserve zero values safely
+- Compared distribution before and after transformation.
+
+E. Duration Analysis
+- Used boxplots to study variation of duration across classes.
+- Observed that certain attack types show distinct duration patterns.
+
+F. Correlation Analysis
+- Computed correlation matrix for selected numerical features.
+- Generated heatmaps to visualize relationships between features.
+- Checked for potential multicollinearity between variables.
+
+
+5. Networking Concepts Reviewed
+-------------------------------
+During the initial sessions, several networking fundamentals were discussed to better understand the dataset and its features.
+
+Key concepts included:
+
+- TCP (Transmission Control Protocol)
+  Connection-oriented protocol using a three-way handshake for reliable communication.
+
+- UDP (User Datagram Protocol)
+  Faster connectionless protocol with no delivery guarantee.
+
+- ICMP (Internet Control Message Protocol)
+  Used for network diagnostics such as ping.
+
+- Connection Flags
+  Indicators representing the status of communication between hosts.
+
+- Common Attack Strategies
+  DoS (Denial of Service)
+  Probe attacks (network scanning)
+  R2L (Remote to Local attacks)
+  U2R (User to Root privilege escalation)
+
+
+6. Key Insights from Milestone 1
+--------------------------------
+1. The dataset contains significant class imbalance.
+2. TCP traffic is more frequently associated with attacks.
+3. src_bytes exhibits strong right-skewed distribution.
+4. Zero-byte connections are meaningful indicators in network behavior.
+5. Duration and byte-based features may help differentiate attack patterns.
+
+
+7. Concepts Learned
+-------------------
+- Exploratory Data Analysis (EDA)
+- Data validation techniques
+- Handling skewed distributions
+- Log transformation using log1p
+- Feature relationship analysis using correlation
+- Importance of domain knowledge in cybersecurity
+- Understanding the fundamentals of intrusion detection systems
+
+
+8. Additional Concepts Learned
+------------------------------
+During the sessions, several data engineering and data management concepts were also discussed:
+
+- OLTP (Online Transaction Processing)
+  Systems designed to handle real-time transactional operations with high consistency and speed.
+
+- OLAP (Online Analytical Processing)
+  Systems used for analyzing large historical datasets to identify patterns and trends.
+
+- ETL (Extract, Transform, Load)
+  The process of extracting raw data, transforming it into a usable format, and loading it into analytical systems.
+
+- Data Warehousing
+  A centralized repository designed for storing large volumes of structured data for analytical querying.
+
+- Domain Knowledge
+  Understanding the application domain helps improve feature selection, data interpretation, and model performance.
+
+
+9. Next Steps
+-------------
+Future work in the project will involve:
+
+- Encoding categorical variables
+- Feature scaling for numerical attributes
+- Grouping attack categories
+- Applying machine learning algorithms
+- Model evaluation using:
+  Precision
+  Recall
+  F1-score
+  Confusion Matrix
+
+
+---------------------------------------------------------------
+Milestone 1 Completed
+SentinelNet – AI Based Network Intrusion Detection System
+---------------------------------------------------------------
