@@ -1,0 +1,140 @@
+SentinelNet – AI-Based Network Intrusion Detection System
+Milestone 1: Dataset Understanding and Analysis
+1. Introduction
+
+With the rapid increase in internet usage, cyber threats have become a major concern for organizations and individuals. A Network Intrusion Detection System (NIDS) helps identify suspicious activities in network traffic.
+
+The objective of this project, SentinelNet, is to develop a machine learning–based intrusion detection system capable of classifying network traffic as normal or malicious.
+This milestone focuses on the initial phase of the project, which includes dataset understanding, exploratory data analysis, and preliminary preprocessing.
+
+2. Dataset Used
+
+The project uses the NSL-KDD dataset, which is widely used for research in network intrusion detection.
+
+This dataset contains network traffic records where each record describes a connection using several features such as protocol type, service, and traffic statistics.
+
+Files used in this project:
+
+KDDTrain+.txt – Training dataset
+
+KDDTest+.txt – Testing dataset
+
+The dataset was imported using Python and examined to understand its structure, features, and target labels.
+
+3. Tools and Libraries Used
+
+The following tools were used for data analysis and preprocessing:
+
+Python
+
+Jupyter Notebook
+
+Pandas
+
+NumPy
+
+Matplotlib
+
+These tools help in data handling, statistical analysis, and visualization.
+
+4. Exploratory Data Analysis (EDA)
+
+Exploratory Data Analysis was performed to understand the dataset and identify important patterns.
+
+The following steps were carried out:
+
+Checked dataset information using .info()
+
+Generated statistical summaries using .describe()
+
+Examined class distribution
+
+Identified categorical features such as protocol_type, service, and flag
+
+Observed the distribution of numerical features
+
+This analysis helped understand feature ranges and data distribution.
+
+5. Networking Concepts
+
+To properly interpret the dataset, basic networking concepts were reviewed, including:
+
+TCP, UDP, and ICMP protocols
+
+Port-based communication
+
+Packet transmission
+
+Connection states and flags
+
+These concepts help in understanding how network traffic behaves and how attacks occur.
+
+6. Dataset Observations
+
+Several observations were made during the analysis:
+
+The dataset contains both categorical and numerical features.
+
+Some features show high variation in values.
+
+The distribution of attack types is not balanced.
+
+Certain attack categories appear more frequently than others.
+
+These observations suggest the need for proper preprocessing before model training.
+
+7. Attack Categories
+
+The NSL-KDD dataset includes four main attack categories:
+
+Denial of Service (DoS) – Overloads system resources to make services unavailable.
+
+Probe – Scans networks to gather information.
+
+Remote to Local (R2L) – Attempts to gain local access from a remote system.
+
+User to Root (U2R) – Attempts to gain administrative privileges.
+
+Understanding these attacks helps in designing effective detection models.
+
+8. Data Preprocessing
+
+Initial preprocessing steps included:
+
+Checking for missing values
+
+Verifying duplicate records
+
+Identifying categorical and numerical attributes
+
+Validating label consistency
+
+Although the dataset does not contain missing values, validation was performed to ensure data quality.
+
+Future preprocessing may include:
+
+Encoding categorical variables
+
+Feature scaling
+
+Feature selection
+
+9. Statistical Analysis
+
+Statistical analysis was conducted on numerical features to understand their distribution. Measures such as mean, standard deviation, minimum, maximum, and quartiles were examined.
+
+This helps identify patterns, outliers, and potential normalization requirements.
+
+10. Data Validation
+
+Before moving to model development, several validation checks were performed:
+
+Verified dataset dimensions
+
+Ensured correct labeling of attack categories
+
+Confirmed absence of null values
+
+Checked data type consistency
+
+These checks ensure that the dataset is clean and ready for machine learning model development in the next phase.
