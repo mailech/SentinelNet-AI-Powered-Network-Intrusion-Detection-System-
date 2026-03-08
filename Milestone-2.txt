@@ -1,0 +1,198 @@
+SentinelNet: AI-Powered Network Intrusion Detection System (NIDS)
+ Feature Engineering, Feature Selection and Data Preparation
+
+Overview of Work Completed
+• Cleaned and prepared the dataset for machine learning modelling.
+• Converted categorical attributes into numerical format.
+• Removed redundant and low-information features.
+• Ranked features using Random Forest importance scores.
+• Applied feature scaling to standardize numerical values.
+• Balanced class distribution using SMOTE.
+• Visualized data distribution using PCA.
+• Saved processed datasets for the model training phase.
+
+Categorical Feature Encoding
+
+Encoding protocol_type and flag
+• Applied One-Hot Encoding to convert categories into binary columns.
+• Encoder trained on training data only to avoid data leakage.
+• Same transformation applied to the test dataset.
+• Each category created a separate indicator column.
+
+Encoding service column
+• The service feature had a large number of unique values.
+• Used frequency encoding instead of one-hot encoding to avoid too many columns.
+• Each service value replaced with its occurrence frequency in the training dataset.
+• Service values appearing only in test data were assigned value 0.
+
+Cleaning after encoding
+• Original columns protocol_type, flag, and service removed after encoding.
+• Final encoded dataset shapes printed for verification.
+
+Preparing the Feature Matrix
+• Target column attack_class converted to numeric form using LabelEncoder.
+• Removed metadata columns not useful for model training such as:
+  -label
+  -difficulty_level
+  -attack_class
+  -is_outlier
+• Created feature matrices:
+  -X_train_fs for training features
+  -X_test_fs for testing features
+• Ensured test dataset columns matched training columns using reindex(fill_value=0).
+• Printed total number of features before performing feature selection.
+
+Removing Highly Correlated Features
+• Calculated correlation matrix for all numeric features.
+• Extracted upper triangle of matrix to avoid duplicate comparisons.
+• Identified features with correlation greater than 0.95.
+• Highly correlated features removed because:
+Keeping both increases noise without improving prediction.
+• Printed:
+  -Number of removed features
+  -Names of removed features
+• Generated a correlation heatmap to confirm reduced redundancy.
+
+
+Removing Low Variance Features
+• Applied VarianceThreshold filtering.
+• Features with variance lower than 0.01 removed because:
+Such features contribute almost nothing to model learning.
+• Filter applied on training data and same columns removed from test dataset.
+• Printed:
+  -Number of removed columns
+  -Remaining feature count.
+
+
+Feature Importance Analysis
+• Used Random Forest Classifier to estimate feature importance.
+• Sampled a subset of training rows to reduce training time.
+Model configuration:
+• n_estimators = 100
+• max_depth = 10
+• random_state = 42
+Steps performed:
+• Trained model on sampled dataset.
+• Generated importance scores for all features.
+• Sorted features from most important to least important.
+Visualization:
+• Created horizontal bar chart showing top important features.
+
+
+Feature filtering:
+• Applied importance threshold 0.001.
+• Features below this value considered low contribution and removed.
+• Printed:
+Number of features kept
+Number of features removed.
+
+
+Feature Scaling
+• Applied RobustScaler to normalize numerical values.
+Why RobustScaler was used:
+• Uses median and interquartile range instead of mean and standard deviation.
+• More resistant to extreme outliers.
+Scaling procedure:
+• Scaler fitted only on training data.
+• Same scaling transformation applied to test data.
+This prevents data leakage.
+
+
+Handling Class Imbalance
+Problem
+• Dataset contained uneven distribution of attack classes.
+Example:
+• DoS attacks had very large number of samples.
+• U2R attacks had very few samples.
+This imbalance can cause models to focus mostly on majority classes.
+
+
+Solution – SMOTE
+• Applied SMOTE (Synthetic Minority Oversampling Technique).
+
+How SMOTE works:
+• Generates synthetic samples for minority classes.
+• Creates new data points between nearby samples instead of copying existing ones.
+
+Implementation:
+• SMOTE applied only on training dataset.
+• Test dataset left unchanged to represent real unseen data.
+
+Validation:
+• Printed class distribution before and after SMOTE.
+• Generated comparison plots to show balanced classes.
+
+Dimensionality Reduction Using PCA
+• Used Principal Component Analysis (PCA) for visualization.
+Steps performed:
+• Reduced dataset into two principal components.
+• Created scatter plot showing data distribution.
+
+
+Plot details:
+• X-axis = Principal Component 1
+• Y-axis = Principal Component 2
+• Different colors used for different attack classes.
+
+
+Purpose:
+• Helps visually inspect separation between classes.
+Note:
+• PCA used only for visualization, not for training models.
+
+
+Saving Processed Datasets
+Final datasets saved for use in the modelling stage.
+Files created:
+• Processed training dataset (after SMOTE).
+• Processed testing dataset (original distribution).
+• Feature importance ranking file.
+
+
+Important points:
+• SMOTE applied only to training data.
+• Test dataset kept unchanged.
+• Feature columns aligned between both datasets.
+
+
+Feature Importance on Full Resampled Dataset
+• Loaded processed training dataset from saved files.
+Dataset characteristics:
+• Large balanced dataset created after SMOTE.
+Steps performed:
+• Separated features and target variable.
+• Encoded target labels using LabelEncoder.
+
+
+Model training:
+• Trained Random Forest model on the entire dataset.
+Configuration:
+• n_estimators = 100
+• max_depth = 10
+• random_state = 42
+
+
+Results:
+• Generated importance scores for all features.
+• Sorted features in descending order.
+
+
+Visualizations:
+• Horizontal bar chart showing top 25 important features.
+• Line plot showing importance distribution across all features.
+• Threshold line used to identify low-importance features.
+
+Feature filtering:
+• Features with importance lower than 0.001 marked as low importance.
+• Final set of useful features identified for model training.
+
+Summary of Milestone 2 Work
+Major tasks completed during this phase:
+• Encoded categorical variables into numerical format.
+• Prepared feature matrices for training and testing datasets.
+• Removed redundant and low-variance features.
+• Ranked features based on importance scores.
+• Applied feature scaling using RobustScaler.
+• Balanced dataset using SMOTE.
+• Visualized class distribution using PCA.
+• Saved processed datasets for model training.
