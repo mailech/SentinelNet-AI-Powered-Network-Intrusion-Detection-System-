@@ -1,0 +1,368 @@
+[
+  {
+    "index": 0,
+    "type": "markdown",
+    "preview": "# SENTINELNET \u2013 AI BASED NETWORK INTRUSION DETECTION SYSTEM \\n ## Professional Internship Project - Milestone 1 & 2 \\n ### Project Context & Objectives \\n Sent",
+    "lines": 13
+  },
+  {
+    "index": 1,
+    "type": "code",
+    "preview": "import pandas as pd \\n import numpy as np \\n import matplotlib.pyplot as plt \\n import seaborn as sns \\n import os \\n import warnings \\n from sklearn.preprocessing impo",
+    "lines": 17
+  },
+  {
+    "index": 2,
+    "type": "code",
+    "preview": "# Suppress warnings for cleaner output \\n warnings.filterwarnings('ignore') \\n  \\n # Plot styling \\n plt.style.use('ggplot') \\n sns.set_palette(\"husl\") \\n  \\n # Define Col",
+    "lines": 18
+  },
+  {
+    "index": 3,
+    "type": "markdown",
+    "preview": "### 1. Data Loading and Initial Inspection \\n Loading the KDDTrain+ and KDDTest+ datasets and verifying their shape.",
+    "lines": 2
+  },
+  {
+    "index": 4,
+    "type": "code",
+    "preview": "# Load Data (Assuming data is in ../SentinelNet/data or ../data relative to notebook) \\n # You might need to adjust the path based on your exact folder s",
+    "lines": 21
+  },
+  {
+    "index": 5,
+    "type": "markdown",
+    "preview": "### 2. Data Preprocessing & Cleaning \\n Mapping specific attack types to broad categories (Normal, DoS, Probe, R2L, U2R), identifying feature groups, and",
+    "lines": 2
+  },
+  {
+    "index": 6,
+    "type": "code",
+    "preview": "# Mapping Dictionary \\n attack_mapping = { \\n     'normal': 'normal', \\n      \\n     # DoS \\n     'back': 'DoS', 'land': 'DoS', 'neptune': 'DoS', 'pod': 'DoS', 'smur",
+    "lines": 23
+  },
+  {
+    "index": 7,
+    "type": "code",
+    "preview": "#Defining feature Groups \\n  \\n categorical_features = ['protocol_type','service','flag'] \\n binary_features = ['land','logged_in','is_host_login','is_guest_lo",
+    "lines": 13
+  },
+  {
+    "index": 8,
+    "type": "code",
+    "preview": "def clean_outliers_isolation_forest(df,contamination = 0.01): \\n     iso_df  = df[numerical_features].copy() \\n  \\n     clf = IsolationForest(max_samples='auto",
+    "lines": 12
+  },
+  {
+    "index": 9,
+    "type": "code",
+    "preview": "plt.figure(figsize=(10,6)) \\n sns.scatterplot(data=df_train[::100], x = 'src_bytes', y = 'dst_bytes', hue='is_outlier', style='attack_class') \\n plt.xscale(",
+    "lines": 5
+  },
+  {
+    "index": 10,
+    "type": "markdown",
+    "preview": "### 3. Exploratory Data Analysis & Log Transformation \\n Transforming highly skewed numerical features (e.g., bytes and duration) and visualizing correla",
+    "lines": 2
+  },
+  {
+    "index": 11,
+    "type": "code",
+    "preview": "skewed_cols = ['duration','src_bytes','dst_bytes'] \\n  \\n # Function for the Log1p transformation (log(x+1)) to handle the zeros \\n  \\n def apply_log_transform(df",
+    "lines": 29
+  },
+  {
+    "index": 12,
+    "type": "code",
+    "preview": "import pandas as pd \\n  \\n # load the separate labeled dataset (file has no extension but is CSV formatted) \\n # adjust the path or filename if necessary \\n label",
+    "lines": 7
+  },
+  {
+    "index": 13,
+    "type": "code",
+    "preview": "import numpy as np \\n  \\n # work with the labeled dataset \\n log_df = labeled_df[['duration', 'src_bytes', 'dst_bytes']].copy() \\n  \\n for col in ['duration', 'src_b",
+    "lines": 8
+  },
+  {
+    "index": 14,
+    "type": "code",
+    "preview": "import seaborn as sns \\n import matplotlib.pyplot as plt \\n  \\n log_corr = log_df.corr() \\n  \\n plt.figure(figsize=(6,5)) \\n sns.heatmap(log_corr, annot=True, cmap='coo",
+    "lines": 9
+  },
+  {
+    "index": 15,
+    "type": "markdown",
+    "preview": "### 4. Feature Engineering \\n Engineering highly relevant features such as `total_bytes`, `packet_rate`, `byte_difference`, and `is_error_flag`.",
+    "lines": 2
+  },
+  {
+    "index": 16,
+    "type": "code",
+    "preview": "for df in [df_train_work, df_test_work]: \\n  \\n     df['total_bytes'] = df['src_bytes'] + df['dst_bytes'] \\n     df['bytes_ratio'] = df['src_bytes'] / (df['dst",
+    "lines": 4
+  },
+  {
+    "index": 17,
+    "type": "code",
+    "preview": "def engineer_features(df): \\n     df_eng = df.copy() \\n      \\n     # 1. Total Bytes \\n     df_eng['total_bytes'] = df_eng['src_bytes'] + df_eng['dst_bytes'] \\n     ",
+    "lines": 31
+  },
+  {
+    "index": 18,
+    "type": "code",
+    "preview": "# second version of engineer_features (also superseded by final helper defined later) \\n # def engineer_features(df): \\n #     df_eng = df.copy() \\n # \\n #     # ",
+    "lines": 18
+  },
+  {
+    "index": 19,
+    "type": "code",
+    "preview": "# use the most recent version of the feature\u2011engineering helper on the labeled dataset \\n  \\n df_transformed = engineer_features(labeled_df) \\n  \\n df_transformed",
+    "lines": 6
+  },
+  {
+    "index": 20,
+    "type": "code",
+    "preview": "# review the column names of the labeled dataset \\n labeled_df.columns \\n ",
+    "lines": 3
+  },
+  {
+    "index": 21,
+    "type": "code",
+    "preview": "df_train['service'] \\n ",
+    "lines": 2
+  },
+  {
+    "index": 22,
+    "type": "code",
+    "preview": "import numpy as np \\n  \\n def engineer_features(df): \\n     df_eng = df.copy() \\n  \\n     # 1\ufe0f\u20e3 Total Bytes \\n     df_eng['total_bytes'] = df_eng['src_bytes'] + df_eng[",
+    "lines": 18
+  },
+  {
+    "index": 23,
+    "type": "code",
+    "preview": "# run the final version of the feature engineering function on the labeled dataset \\n  \\n df_transformed = engineer_features(labeled_df) \\n  \\n df_transformed.hea",
+    "lines": 6
+  },
+  {
+    "index": 24,
+    "type": "code",
+    "preview": "plt.figure(figsize=(6,5)) \\n plt.scatter(log_df['duration'], log_df['src_bytes'], alpha=0.3) \\n plt.xlabel('Log(Duration)') \\n plt.ylabel('Log(Src_Bytes)') \\n plt",
+    "lines": 8
+  },
+  {
+    "index": 25,
+    "type": "code",
+    "preview": "plt.figure(figsize=(6,5)) \\n plt.scatter(df_transformed['total_bytes'], \\n             df_transformed['packet_rate'], \\n             alpha=0.3) \\n  \\n plt.xlabel(\"To",
+    "lines": 9
+  },
+  {
+    "index": 26,
+    "type": "code",
+    "preview": "plt.figure(figsize=(6,5)) \\n plt.hexbin(log_df['duration'], log_df['dst_bytes'], gridsize=40) \\n plt.xlabel('Log(Duration)') \\n plt.ylabel('Log(Dst_Bytes)') \\n pl",
+    "lines": 9
+  },
+  {
+    "index": 27,
+    "type": "code",
+    "preview": "import seaborn as sns \\n  \\n plt.figure(figsize=(6,5)) \\n sns.regplot(x=log_df['src_bytes'], y=log_df['dst_bytes'], scatter_kws={'alpha':0.3}) \\n plt.xlabel('Log(",
+    "lines": 10
+  },
+  {
+    "index": 28,
+    "type": "markdown",
+    "preview": "### 5. Data Encoding \\n One-Hot Encoding categorical features like `protocol_type` and `flag` without inducing data leakage.",
+    "lines": 2
+  },
+  {
+    "index": 29,
+    "type": "code",
+    "preview": "# Mapping for the target variable (Only part not inside Pipeline) \\n attack_mapping = { \\n     'normal': 'normal', \\n     'back': 'DoS', 'land': 'DoS', 'neptun",
+    "lines": 21
+  },
+  {
+    "index": 30,
+    "type": "code",
+    "preview": "ohe = OneHotEncoder(sparse_output=False,handle_unknown='ignore') \\n cols_to_encode = ['protocol_type','flag'] \\n  \\n #Fit and Train \\n  \\n ohe_train = pd.DataFrame(o",
+    "lines": 25
+  },
+  {
+    "index": 31,
+    "type": "code",
+    "preview": "print(df_train_encode.columns)",
+    "lines": 1
+  },
+  {
+    "index": 32,
+    "type": "code",
+    "preview": "df_test_encode",
+    "lines": 1
+  },
+  {
+    "index": 33,
+    "type": "code",
+    "preview": "df_train_encode.drop(columns=['protocol_type','flag','service'],inplace = True) \\n df_test_encode.drop(columns=['protocol_type','flag','service'],inplace",
+    "lines": 2
+  },
+  {
+    "index": 34,
+    "type": "code",
+    "preview": "print(df_train_encode.shape) \\n  \\n df_test_encode",
+    "lines": 3
+  },
+  {
+    "index": 35,
+    "type": "code",
+    "preview": "df_train_encode",
+    "lines": 1
+  },
+  {
+    "index": 36,
+    "type": "markdown",
+    "preview": "### 6. Feature Selection & Noise Removal \\n Filtering highly correlated features using a correlation matrix upper-triangle mask to reduce multicollineari",
+    "lines": 2
+  },
+  {
+    "index": 37,
+    "type": "code",
+    "preview": "import numpy as np \\n  \\n corr_matrix = X.corr().abs() \\n  \\n upper = corr_matrix.where( \\n     np.triu(np.ones(corr_matrix.shape), k=1).astype(bool) \\n ) \\n  \\n to_drop = [c",
+    "lines": 13
+  },
+  {
+    "index": 38,
+    "type": "code",
+    "preview": "#Co-relation Filter \\n  \\n corr_matrix = df_train_encode.select_dtypes(include=[np.number]).corr().abs() \\n #Upper Triangle of teh co-realtion matrix \\n  \\n upper = ",
+    "lines": 21
+  },
+  {
+    "index": 39,
+    "type": "code",
+    "preview": "d= df_train_encode[to_drop] \\n d.iloc[:10]",
+    "lines": 2
+  },
+  {
+    "index": 40,
+    "type": "code",
+    "preview": "# Select label columns correctly \\n label_cols = ['label', 'attack_class', 'difficulty_level'] \\n label = df_train_encode[[c for c in label_cols if c in df_",
+    "lines": 22
+  },
+  {
+    "index": 41,
+    "type": "code",
+    "preview": "# ============================== \\n # Encode categorical features \\n # ============================== \\n  \\n # Copy datasets \\n df_train_encode = df_train.copy() \\n df_",
+    "lines": 28
+  },
+  {
+    "index": 42,
+    "type": "code",
+    "preview": "# Select label columns correctly \\n label_cols = ['label', 'attack_class', 'difficulty_level'] \\n  \\n label = df_train_encode[ \\n     [c for c in label_cols if c ",
+    "lines": 26
+  },
+  {
+    "index": 43,
+    "type": "code",
+    "preview": "import seaborn as sns \\n import matplotlib.pyplot as plt \\n  \\n plt.figure(figsize=(6,5)) \\n sns.heatmap(log_corr, annot=True, cmap='coolwarm', fmt=\".2f\") \\n plt.tit",
+    "lines": 7
+  },
+  {
+    "index": 44,
+    "type": "code",
+    "preview": "plt.figure(figsize=(6,5)) \\n plt.scatter(log_df['duration'], log_df['src_bytes'], alpha=0.3) \\n plt.xlabel('Log(Duration)') \\n plt.ylabel('Log(Src_Bytes)') \\n plt",
+    "lines": 8
+  },
+  {
+    "index": 45,
+    "type": "code",
+    "preview": "import numpy as np \\n import pandas as pd \\n #Load dataset \\n train_df = pd.read_csv(\"labeled_CSV\") \\n ",
+    "lines": 5
+  },
+  {
+    "index": 46,
+    "type": "code",
+    "preview": "import pandas as pd \\n import matplotlib.pyplot as plt \\n import seaborn as sns \\n from sklearn.manifold import TSNE \\n  \\n # Load dataset \\n df_train = pd.read_csv(\"lo",
+    "lines": 33
+  },
+  {
+    "index": 47,
+    "type": "code",
+    "preview": "# Select only numeric columns \\n numeric_cols = train_df.select_dtypes(include=np.number).columns \\n  \\n # Create copy \\n log_train_df = train_df.copy() \\n  \\n # Apply ",
+    "lines": 11
+  },
+  {
+    "index": 48,
+    "type": "code",
+    "preview": "# Create copy \\n log_train_df = train_df.copy() \\n  \\n # Apply log(1 + x) transformation \\n for col in numeric_cols: \\n     log_train_df[col] = np.log1p(log_train_df",
+    "lines": 6
+  },
+  {
+    "index": 49,
+    "type": "code",
+    "preview": "",
+    "lines": 1
+  },
+  {
+    "index": 50,
+    "type": "code",
+    "preview": "log_train_df.to_csv(\"log_transformed_train.csv\", index=False) \\n  \\n print(\"Log-transformed dataset saved successfully.\")",
+    "lines": 3
+  },
+  {
+    "index": 51,
+    "type": "code",
+    "preview": "print(df_train_reduce.columns)",
+    "lines": 1
+  },
+  {
+    "index": 52,
+    "type": "markdown",
+    "preview": "### 7. Train/Test Split \\n Separating the dataset into predictive features (X) and target labels (y), and performing a standard train-test split.",
+    "lines": 2
+  },
+  {
+    "index": 53,
+    "type": "code",
+    "preview": "from sklearn.model_selection import train_test_split \\n  \\n X = df.drop('label', axis=1) \\n y = df['label'] \\n  \\n X_train, X_test, y_train, y_test = train_test_spli",
+    "lines": 8
+  },
+  {
+    "index": 54,
+    "type": "code",
+    "preview": "import matplotlib.pyplot as plt \\n import seaborn as sns \\n import pandas as pd \\n  \\n # Side by side comparison \u2014 Before vs After SMOTE \\n fig, axes = plt.subplots(",
+    "lines": 26
+  },
+  {
+    "index": 55,
+    "type": "markdown",
+    "preview": "### 8. Handling Class Imbalance (SMOTE) \\n Using Synthetic Minority Oversampling Technique (SMOTE) to synthetically balance the training dataset (Normal ",
+    "lines": 2
+  },
+  {
+    "index": 56,
+    "type": "code",
+    "preview": "# Imports \\n import numpy as np \\n import pandas as pd \\n import matplotlib.pyplot as plt \\n import seaborn as sns \\n  \\n from imblearn.over_sampling import SMOTE \\n from ",
+    "lines": 53
+  },
+  {
+    "index": 57,
+    "type": "code",
+    "preview": "print(y.value_counts())",
+    "lines": 1
+  },
+  {
+    "index": 58,
+    "type": "markdown",
+    "preview": "### 9. Model Training & Evaluation\\nTraining baseline models (Random Forest, Logistic Regression, SVM) and evaluating performance.",
+    "lines": 1
+  },
+  {
+    "index": 59,
+    "type": "code",
+    "preview": "from sklearn.linear_model import LogisticRegression \\n from sklearn.svm import SVC \\n models = { \\n     \"Random Forest\": RandomForestClassifier(random_state=42",
+    "lines": 10
+  },
+  {
+    "index": 60,
+    "type": "code",
+    "preview": "from sklearn.metrics import classification_report, accuracy_score \\n  \\n for name, model in models.items(): \\n  \\n     preds = model.predict(X_test) \\n  \\n     print(f\"",
+    "lines": 9
+  }
+]
