@@ -118,3 +118,84 @@ Dimensionality Reduction (PCA)
 Principal Component Analysis (PCA) was applied after scaling to reduce dimensionality while retaining maximum variance. This step improved computational efficiency and simplified the feature space.
 
 Final optimized feature count: 36 features/components
+t-SNE Visualization
+
+t-SNE was applied to visualize high-dimensional data in a 2D space.
+
+Helped understand clustering of normal vs attack traffic
+Provided insight into feature separability
+🧠 Final Pipeline
+
+Raw Data
+→ Data Cleaning
+→ Encoding
+→ Feature Engineering
+→ Correlation Filtering
+→ Noise Reduction
+→ Train-Test Split
+→ SMOTE (Training Only)
+→ Preprocessing Pipeline
+→ Scaling
+→ PCA
+→ t-SNE Visualization
+→ Anomaly Detection
+→ Model Training
+→ Evaluation
+
+⚙️ Model Development & Final Steps
+Data Preparation
+Created attack_class from raw labels
+Encoded target variable using LabelEncoder
+Prepared feature dataset
+Train-Test Split
+
+Dataset was split into training and testing sets before applying SMOTE to prevent data leakage.
+
+Preprocessing Pipeline
+
+Pipeline included:
+
+SimpleImputer
+StandardScaler
+PCA
+
+Fitted on training data and applied to test data.
+Saved using joblib for reuse.
+
+Anomaly Detection
+
+Applied Isolation Forest to detect unusual traffic patterns.
+
+Generated:
+
+iso_score
+iso_pred
+is_anomaly
+Final Classifier
+Trained Random Forest Classifier
+Performed hyperparameter tuning using GridSearchCV
+Selected best-performing model
+Final Evaluation
+
+Evaluated model using:
+
+Accuracy
+Precision
+Recall
+F1-score
+
+Generated:
+
+Classification report
+Confusion matrix
+ROC-AUC Analysis
+Performed ROC-AUC evaluation on test data
+Used One-vs-Rest approach for multiclass
+Plotted ROC curves for each class
+Deep Performance Audit
+
+Conducted detailed class-wise performance analysis:
+
+Per-class F1-score
+Identification of easiest and hardest classes
+Analysis of confusion patterns
