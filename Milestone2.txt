@@ -1,0 +1,149 @@
+# SENTINELNET – AI BASED NETWORK INTRUSION DETECTION SYSTEM
+
+Milestone 2 – Feature Engineering and Data Preprocessing
+
+1. Introduction
+
+---
+
+In this milestone, the focus was on transforming the raw NSL-KDD dataset into a structured and machine learning-ready format. This involved applying feature engineering techniques, encoding categorical variables, handling multicollinearity, scaling features, addressing class imbalance, and performing dimensionality reduction.
+
+The goal of this stage was to improve data quality and prepare it for effective model training.
+
+2. Feature Engineering
+
+---
+
+New features were created to capture deeper insights from network traffic behavior:
+
+* total_bytes = src_bytes + dst_bytes
+  Represents total data transferred in a connection.
+
+* src_bytes_ratio = src_bytes / (total_bytes + 1e-5)
+  Indicates direction dominance of traffic.
+
+* packet_rate = count / (duration + 1e-5)
+  Helps identify high-frequency traffic in short durations.
+
+* byte_difference = |src_bytes - dst_bytes|
+  Captures asymmetry in communication.
+
+* is_error_flag
+  Binary feature indicating suspicious connection flags (S0, S1, S2, S3, REJ).
+
+* same_srv_interaction
+  Interaction between same service rates to identify unusual patterns.
+
+These features help in distinguishing normal and attack traffic more effectively.
+
+3. Encoding of Categorical Features
+
+---
+
+The dataset contains categorical attributes such as:
+
+* protocol_type
+* service
+* flag
+
+These were converted into numerical format using **One-Hot Encoding**, enabling compatibility with machine learning algorithms.
+
+Train and test datasets were aligned to ensure consistent feature dimensions after encoding.
+
+4. Correlation Filtering
+
+---
+
+To reduce redundancy and multicollinearity:
+
+* A correlation matrix was computed for numerical features.
+* Features with correlation greater than **0.95** were identified.
+* Highly correlated features were removed to improve model efficiency and reduce overfitting.
+
+This step helped simplify the dataset without significant loss of information.
+
+5. Feature Scaling
+
+---
+
+Since the dataset contains features with varying ranges and extreme outliers, **RobustScaler** was applied.
+
+* Uses median and interquartile range (IQR)
+* Resistant to outliers
+* Scales features without being affected by extreme values
+
+Scaling ensures that all features contribute equally during model training.
+
+6. Handling Class Imbalance (SMOTE)
+
+---
+
+The NSL-KDD dataset is highly imbalanced across attack categories.
+
+To address this:
+
+* Applied **SMOTE (Synthetic Minority Oversampling Technique)**
+* Generated synthetic samples for minority classes
+* Balanced all classes to equal representation
+
+This improves model performance, especially for rare attack types like U2R and R2L.
+
+7. PCA Visualization
+
+---
+
+Principal Component Analysis (PCA) was used for visualization:
+
+* Reduced high-dimensional data to 2 principal components
+* Visualized class distribution after SMOTE
+* Observed improved separation between attack categories
+
+This step helped in understanding how well the data is structured for classification.
+
+8. Data Preparation Outcome
+
+---
+
+After completing preprocessing, the dataset is now:
+
+* Cleaned and validated
+* Feature-engineered
+* Properly encoded
+* Reduced for multicollinearity
+* Scaled for uniformity
+* Balanced across classes
+
+This dataset is now ready for machine learning model training.
+
+9. Key Learnings
+
+---
+
+* Importance of feature engineering in improving model performance
+* Handling categorical variables using encoding techniques
+* Detecting and removing multicollinearity
+* Robust scaling for outlier-heavy data
+* Addressing class imbalance using SMOTE
+* Dimensionality reduction using PCA
+
+10. Next Steps
+
+---
+
+* Model selection (Logistic Regression, Random Forest, etc.)
+* Model training and validation
+* Performance evaluation using:
+
+  * Accuracy
+  * Precision
+  * Recall
+  * F1-score
+  * Confusion Matrix
+* Hyperparameter tuning
+* Deployment and integration
+
+---
+
+Milestone 2 Completed
+SentinelNet – AI Based Network Intrusion Detection System
+---------------------------------------------------------
