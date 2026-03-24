@@ -1,0 +1,215 @@
+SentinelNet — Milestone 3
+Week 5 & Week 6
+
+
+What I Did
+
+  - Loaded preprocessed data saved from Feature Engineering notebook.
+  - Detected anomalous traffic using 4 unsupervised methods.
+  - Tuned hyperparameters using GridSearchCV with cross validation.
+  - Trained and compared 4 supervised models.
+  - Evaluated all models using full metrics — Accuracy, Precision, Recall, F1.
+  - Generated Classification Report, Confusion Matrix, and ROC-AUC curve.
+  - Validated model stability using 5-fold cross validation.
+  - Saved best model to disk for future deployment.
+
+
+Load Preprocessed Data
+
+  - Loaded train_processed_advanced.csv and test_processed_advanced.csv.
+  - These files were saved at the end of Milestone 2.
+  - Train: 336,715 rows (post SMOTE) — all 5 classes balanced.
+  - Separated features into X_signal and target into attack_class.
+  - LabelEncoder applied to convert class names to integers:
+      - DoS - 0, Probe - 1, R2L - 2, U2R - 3, normal - 4
+
+
+
+WEEK 5 — Anomaly Detection with Unsupervised Learning
+
+
+K-Means Clustering
+
+  - KMeans(n_clusters=5) — one cluster per expected attack category.
+  - fit_predict assigns every record to the nearest cluster centroid.
+  - Bar chart — records per cluster.
+  - Count plot — how true attack classes map to each cluster (log scale).
+  - Anomaly detection using centroid distance:
+      - distances = kmeans.transform(X_signal) — distance to each centroid.
+      - min_distances = distance to nearest centroid per record.
+      - threshold = 97th percentile of all distances.
+      - Records beyond threshold = traffic deviating from normal patterns.
+  - Printed anomaly count detected by distance method.
+
+
+Isolation Forest
+
+  - IsolationForest(contamination=0.03, random_state=42, n_jobs=-1).
+  - contamination=0.03 — expects ~3% of records to be anomalies.
+  - Trained on full X_signal (336,715 rows) — fast on large data.
+  - fit_predict returns: 1 = normal, -1 = anomaly.
+  - Results stored in iso_plot_df with columns iso_score and is_anomaly.
+  - Printed total anomaly count.
+
+
+Local Outlier Factor
+
+  - LocalOutlierFactor(n_neighbors=20, contamination=0.05).
+  - Compares local density of each point to its 20 nearest neighbors.
+  - Points much less dense than neighbors = outlier.
+  - Sampled to 5000 rows — LOF is computationally expensive on large data.
+  - Returns: 1 = normal, -1 = outlier.
+  - Printed anomaly count detected in 5000 sample.
+
+
+One-Class SVM
+
+  - OneClassSVM(kernel='rbf', gamma=0.1, nu=0.05).
+  - Learns a tight boundary around normal traffic patterns.
+  - kernel='rbf' — captures non-linear boundaries.
+  - nu=0.05 — upper bound on fraction of outliers (5%).
+  - Trained on 5000 sample rows to learn what normal looks like.
+  - Printed anomaly count detected in 5000 sample.
+
+
+Anomaly Detection Comparison
+
+  Visualizations:
+    - Violin plot — Isolation Forest scores by attack class.
+    - Red dashed line at 0 — below this = anomalous.
+    - Count plot — anomaly flag vs true attack categories (log scale).
+
+  Comparison Table printed — all 4 methods:
+    - K-Means — groups traffic patterns, full dataset, fast.
+    - Isolation Forest — global outliers, full dataset, fast.
+    - Local Outlier Factor — local density outliers, 5000 sample, slow.
+    - One-Class SVM — tight normal boundary, 5000 sample, medium.
+
+
+
+WEEK 6 — Model Evaluation and Fine-Tuning
+
+
+Train/Test Split
+
+  - train_test_split — 80% train, 20% test.
+  - stratify=y_master — all 5 classes proportionally in both sets.
+  - random_state=42 — reproducible split every run.
+  - Printed shape of X_train and X_test.
+
+
+Hyperparameter Tuning (GridSearchCV)
+
+  - GridSearchCV tries every combination in param_grid.
+  - Parameters tested:
+      - n_estimators : [50, 100]
+      - max_depth : [10, 20]
+      - min_samples_leaf : [1, 2]
+  - cv=3 — each combination tested 3 times with different splits.
+  - scoring='f1_macro' — optimize for balanced F1 across all classes.
+  - class_weight='balanced' — prevents ignoring rare classes like U2R.
+  - Best parameters and best CV F1 score printed after tuning.
+  - sentinel_brain = best estimator extracted from GridSearchCV.
+
+
+Train All Models
+
+  Models trained and compared:
+    - Random Forest — sentinel_brain tuned by GridSearch, parallel ensemble.
+    - Decision Tree — max_depth=15, single tree, simple baseline.
+    - Gradient Boosting — n_estimators=50, subsample=0.3 for speed.
+    - XGBoost — n_estimators=100, learning_rate=0.1.
+
+  - All models fitted on X_train, predicted on X_test.
+  - Accuracy and F1 Macro printed per model.
+
+
+Full Evaluation Metrics
+
+  Four metrics computed for every model:
+
+    Accuracy
+      - Overall % of correct predictions.
+      - Formula: correct / total predictions.
+
+    Precision
+      - Of all predicted as attack X, how many were actually X.
+      - High precision = fewer false alarms.
+      - average='macro' — per class then averaged equally.
+      - zero_division=0 — no error if a class was never predicted.
+
+    Recall
+      - Of all actual attack X records, how many were correctly caught.
+      - High recall = fewer missed attacks.
+      - Most important metric for intrusion detection.
+
+    F1 Score
+      - Harmonic mean of Precision and Recall.
+      - Balances both metrics into one number.
+      - Best single metric for imbalanced class problems.
+
+  - All 4 metrics printed for every model.
+
+
+Classification Report
+
+  - Detailed per-class breakdown for best model — Random Forest.
+  - Shows Precision, Recall, F1 Score, Support for each class:
+      - DoS, Probe, R2L, U2R, normal individually.
+  - Support = actual test samples of that class.
+  - class_names decoded from integers back to string names.
+
+
+Confusion Matrix
+
+  - 5×5 matrix — rows = actual class, columns = predicted class.
+  - Diagonal = correctly classified records.
+  - Off-diagonal = misclassified — shows which classes get confused.
+  - sns.heatmap with annot=True — count shown inside every cell.
+  - cmap='Blues' — darker blue = higher count.
+
+
+Model Comparison Chart (2×2 Grid)
+
+  - Four bar charts — one per metric.
+  - Accuracy, Precision, Recall, F1 Score compared for all models.
+  - Each chart uses a different color palette:
+      - Accuracy  : viridis
+      - Precision : plasma
+      - Recall    : coolwarm
+      - F1 Score  : husl
+  - y-axis limited to 0.7–1.0 to make small differences visible.
+  - Final rankings table printed — sorted by F1 Score descending.
+
+
+ROC-AUC Curve
+
+  What is ROC?
+    - Receiver Operating Characteristic curve.
+    - Plots True Positive Rate (Recall) vs False Positive Rate.
+    - One curve plotted per attack class using One vs Rest approach.
+
+  What is AUC?
+    - Area Under the Curve — 1.0 = perfect, 0.5 = random classifier.
+    - Curve close to top-left corner = best performance.
+
+  How it was applied:
+    - label_binarize converts integer labels to binary matrix (5 columns).
+    - predict_proba returns probability scores per class (not hard labels).
+    - roc_curve computed separately for each of the 5 classes.
+    - Each class plotted as a separate colored line with AUC in legend.
+    - Black dashed diagonal = random classifier baseline (AUC = 0.5).
+
+
+Cross Validation
+
+  - StratifiedKFold(n_splits=5, shuffle=True, random_state=42).
+  - Splits data into 5 folds — each fold used as test set once.
+  - Stratified — every fold keeps same class proportions as full dataset.
+  - cross_val_score returns 5 F1 Macro scores — one per fold.
+  - Mean CV F1 — overall generalization performance.
+  - Std CV F1  — consistency across folds (low = stable, not overfitting).
+  - Bar chart plotted — one bar per fold, red dashed line = mean.
+  - y-axis limited to 0.9–1.0 to show small variation clearly.
+
+
