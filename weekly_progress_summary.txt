@@ -1,0 +1,11 @@
+Week 1 – Explored the NSL-KDD dataset, analyzed feature distributions, checked for missing values and duplicates, and visualized key features to understand network traffic patterns.
+
+Week 2 – Performed data preprocessing including encoding categorical features, scaling numerical features using a pipeline, and handled class imbalance using SMOTE on the training set.
+
+Week 3 – Conducted feature engineering and selection using Random Forest feature importance, removed redundant features, and analyzed feature relationships using correlation techniques.
+
+Week 4 – Trained multiple machine learning models including Logistic Regression, Decision Tree, and Random Forest, and evaluated them using accuracy, precision, recall, F1 score, and confusion matrix.
+
+Week 5 – Applied unsupervised anomaly detection techniques such as K-Means, Isolation Forest, Local Outlier Factor, and One-Class SVM, and visualized results using PCA.
+
+Week 6 – Performed hyperparameter tuning using GridSearchCV, compared model performance, generated ROC curves, and validated model stability using cross-validation.
