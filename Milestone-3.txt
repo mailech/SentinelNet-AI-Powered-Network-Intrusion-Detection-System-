@@ -1,0 +1,176 @@
+SentinelNet-AI-Powered-Network-Intrusion-Detection-system
+
+1. Initial Data Handling
+The work begins with loading the NSL-KDD dataset, which represents different types of network traffic. Each record contains multiple attributes describing a connection.
+The dataset was loaded into a structured format using pandas.
+The target variable (attack type) was identified.
+ Features and labels were separated:
+   -Features → all input columns
+   -Target → attack category
+The target values were converted into numerical form using Label Encoding, as machine learning models require numeric inputs.
+
+
+
+2. Feature Preparation and Transformation
+The dataset contains both numerical and categorical features. Since machine learning models cannot directly process text values:
+Categorical features (such as protocol type and service) were encoded.
+All features were transformed into numeric format.
+A preprocessing step ensured that:
+  -Missing values were handled
+  -Data was scaled properly
+The final processed feature set (X_signal) was generated and used for modeling.
+
+
+
+3. Data Splitting Strategy
+To evaluate model performance effectively:
+The dataset was divided into training and testing sets:
+   -80% → training
+   -20% → testing
+Stratified sampling was used to preserve class distribution across both sets.
+This ensures that all attack types are equally represented during training and evaluation.
+
+
+
+4. Exploring Anomalies in Network Traffic
+Before building classification models, anomaly detection techniques were applied to understand unusual patterns in the data.
+->Isolation Forest
+Detects anomalies by isolating rare observations.
+Assigns anomaly labels:
+   -Normal → 0
+   -Anomaly → 1
+Also provides anomaly scores indicating how unusual a data point is.
+->Local Outlier Factor
+   -Measures how different a data point is compared to its neighbors.
+   -Points with significantly lower density are marked as outliers.
+   -Applied on a subset of data due to computational complexity.
+->One-Class SVM
+Learns the boundary around normal traffic.
+Any data point outside this learned boundary is treated as abnormal.
+
+
+
+5. Visual Interpretation of Anomalies
+To better understand anomaly detection results:
+Created visual plots showing:
+   -Distribution of anomaly scores
+   -Number of anomalies across different attack categories
+Used log scale in some plots to clearly visualize imbalanced data.
+This step improves interpretability and helps validate anomaly detection methods.
+
+
+
+6. Model Building for Attack Classification
+After analyzing anomalies, the focus shifted to supervised learning:
+A Random Forest classifier was trained using the processed dataset.
+The model learns patterns in network traffic and classifies them into attack categories.
+Random Forest was chosen because:
+   -It handles large datasets efficiently
+   -It reduces overfitting using multiple trees
+
+
+
+7. Hyperparameter Optimization
+To improve model performance:
+GridSearchCV was applied to find the best model parameters.
+Multiple combinations were tested, including:
+   -Number of trees
+   -Tree depth
+   -Minimum samples per leaf
+Each combination was evaluated using cross-validation.
+The best-performing model was selected automatically.
+
+
+
+8. Performance Measurement
+The trained model was evaluated using multiple metrics to ensure balanced performance:
+*Accuracy
+   -Measures overall correctness of predictions.
+*Precision
+   -Indicates how many predicted attacks were actually correct.
+*Recall
+   -Shows how many actual attacks were successfully detected.
+*F1 Score
+   -Combines precision and recall into a single value.
+
+
+
+9. Class-wise Evaluation
+A detailed classification report was generated:
+Displays performance for each attack category separately.
+Includes:
+  -Precision
+  -Recall
+  -F1-score
+  -Number of samples
+This helps identify which attack types are harder to detect.
+
+
+
+10. Error Analysis using Confusion Matrix
+A confusion matrix was used to analyze prediction results:
+Rows represent actual classes.
+Columns represent predicted classes.
+Diagonal values show correct predictions.
+Off-diagonal values show misclassifications.
+This provides a clear understanding of model mistakes.
+
+
+11. ROC Curve and AUC Analysis
+To further evaluate model performance, ROC analysis was performed.
+  What is ROC Curve?
+  ROC (Receiver Operating Characteristic) curve shows the relationship between:
+       -True Positive Rate (Recall)
+       -False Positive Rate
+  It helps visualize how well the model distinguishes between classes.
+How it was applied
+  Since this is a multi-class problem, One-vs-Rest approach was used.
+  Each class was treated as:
+  Positive class vs all others
+  Probability scores from the model (predict_proba) were used instead of direct predictions.
+  Separate ROC curves were plotted for each class.
+What is AUC?
+AUC (Area Under Curve) measures overall performance:
+   -Value close to 1 → excellent model
+   -Value close to 0.5 → random guessing
+Interpretation
+Curves closer to the top-left corner indicate better performance.
+A higher AUC means the model can distinguish attack types more effectively.
+
+
+
+12. Model Stability Check
+To ensure the model is reliable:
+Applied Stratified K-Fold Cross Validation (k=5).
+The dataset was split into 5 parts:
+Each part used once as test set
+Calculated:
+   -Mean F1 score → overall performance
+   -Standard deviation → consistency
+A stable model shows similar performance across all folds.
+
+
+
+13. Saving the Model
+The final optimized model was saved using joblib.
+This allows:
+  -Reusing the model later
+  -Deploying it without retraining
+
+
+14. Summary of Achievements
+Successfully processed and transformed raw network data.
+Applied anomaly detection techniques to identify suspicious activity.
+Built a classification model capable of detecting multiple attack types.
+Optimized model performance using hyperparameter tuning.
+Evaluated model using detailed metrics and visual tools.
+Verified model stability and saved it for future use.
+
+
+
+Final Conclusion
+The system developed in this phase is capable of:
+Detecting unusual patterns in network traffic
+Classifying different types of attacks
+Providing reliable and interpretable results
+This forms a strong foundation for building a real-world intrusion detection system.
