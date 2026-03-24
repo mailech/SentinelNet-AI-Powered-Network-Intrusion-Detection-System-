@@ -1,0 +1,40 @@
+SentinelNet — Milestone 3
+Anomaly Detection & Final Model Evaluation
+
+
+Overview
+
+- Applied advanced techniques for anomaly detection and model optimization.
+- Evaluated model performance thoroughly.
+
+
+Week 5 — Anomaly Detection
+
+- Applied unsupervised anomaly detection techniques:
+  - K-Means clustering
+  - Isolation Forest
+  - Local Outlier Factor (sample-based)
+  - One-Class SVM (sample-based)
+- Detected anomalies using distance and density-based methods.
+- Visualized data using PCA.
+- Compared anomaly detection methods using summary table and plots.
+
+
+Week 6 — Model Evaluation & Tuning
+
+- Applied GridSearchCV to tune Random Forest model.
+- Used sampling strategy to reduce computational cost.
+- Trained additional models for comparison:
+  - Decision Tree
+  - Gradient Boosting
+- Evaluated models using full metrics.
+- Generated ROC curve for model evaluation.
+- Applied cross-validation to assess model performance.
+- Measured model stability using mean and standard deviation.
+
+
+Outcome
+
+- Developed a complete intrusion detection system pipeline.
+- Achieved reliable and stable model performance.
+- Combined supervised and unsupervised approaches for better detection.

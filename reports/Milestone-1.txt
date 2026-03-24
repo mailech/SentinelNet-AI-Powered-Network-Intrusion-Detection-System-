@@ -1,0 +1,60 @@
+SentinelNet — Milestone 1
+Dataset Exploration & Data Preprocessing
+
+
+Overview
+
+- Built the foundation for intrusion detection by understanding and preparing the dataset.
+- Focused on data exploration, transformation, and preprocessing.
+
+
+Week 1 — Dataset Exploration
+
+- Loaded NSL-KDD dataset and assigned column names.
+- Checked dataset shape, data types, and summary statistics.
+- Verified absence of missing values.
+- Checked for duplicate records.
+- Analyzed distribution of normal vs attack traffic.
+- Explored categorical features such as protocol_type, service, and flag.
+- Visualized numerical features like src_bytes and dst_bytes.
+
+
+Data Analysis
+
+- Identified skewed features such as duration, src_bytes, and dst_bytes.
+- Applied log transformation to reduce skewness.
+- Compared distributions before and after transformation.
+
+
+Outlier Detection
+
+- Applied Isolation Forest to detect anomalous traffic patterns.
+- Created an outlier flag column.
+- Visualized anomalies using scatter plots.
+
+
+Week 2 — Data Preprocessing
+
+- Converted multi-class labels into binary classification (normal vs attack).
+- Performed stratified train-test split.
+- Identified categorical and numerical features.
+
+
+Feature Transformation
+
+- Applied OneHotEncoding to categorical features.
+- Scaled numerical features using preprocessing pipeline.
+- Used ColumnTransformer to combine transformations.
+- Prevented data leakage by fitting transformations only on training data.
+
+
+Handling Class Imbalance
+
+- Applied SMOTE on training data to balance classes.
+- Verified class distribution before and after resampling.
+
+
+Outcome
+
+- Built a clean and structured dataset ready for feature engineering.
+- Established preprocessing pipeline for further steps.

@@ -1,0 +1,43 @@
+SentinelNet — Milestone 2
+Feature Engineering & Model Training
+
+
+Overview
+
+- Improved dataset quality using feature engineering and selection.
+- Built and evaluated machine learning models.
+
+
+Week 3 — Feature Engineering & Selection
+
+- Applied Random Forest to compute feature importance.
+- Ranked features based on importance scores.
+- Selected important features using threshold-based filtering.
+- Removed redundant and low-importance features.
+
+
+Analysis & Visualization
+
+- Visualized feature importance using bar plots.
+- Analyzed feature contribution to model performance.
+- Explored correlations to identify redundant features.
+
+
+Week 4 — Model Training & Evaluation
+
+- Trained multiple models:
+  - Logistic Regression
+  - Decision Tree
+  - Random Forest
+- Evaluated models using:
+  - Accuracy, Precision, Recall, F1 Score
+- Generated classification reports and confusion matrix.
+- Compared model performance using visualization.
+- Selected best model based on F1 score.
+
+
+Outcome
+
+- Reduced feature space and improved data representation.
+- Built baseline models for intrusion detection.
+- Identified best performing model for further improvement.
