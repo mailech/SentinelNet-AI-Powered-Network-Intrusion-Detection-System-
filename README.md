@@ -42,50 +42,6 @@ The project is structured into sequential stages:
 
 ---
 
-## Repository Structure
-# SentinelNet: AI-Powered Network Intrusion Detection System
-
-## Overview
-
-SentinelNet is a machine learning-based network intrusion detection system built using the NSL-KDD dataset. The project focuses on identifying malicious network activity by combining data preprocessing, feature engineering, supervised learning, and anomaly detection techniques.
-
-The goal is to develop a reliable pipeline that can distinguish between normal and attack traffic while maintaining strong generalization performance.
-
----
-
-## Project Workflow
-
-The project is structured into sequential stages:
-
-1. **Data Exploration**
-   - Understanding dataset structure and feature behavior
-   - Identifying class imbalance and feature distributions
-
-2. **Data Preprocessing**
-   - Handling categorical and numerical features
-   - Encoding and scaling using a preprocessing pipeline
-   - Addressing class imbalance using SMOTE
-
-3. **Feature Engineering & Selection**
-   - Generating and selecting important features
-   - Removing redundant and low-importance features
-   - Improving data representation for modeling
-
-4. **Model Training & Evaluation**
-   - Training multiple machine learning models
-   - Evaluating performance using accuracy, precision, recall, and F1 score
-   - Comparing models to select the best performer
-
-5. **Anomaly Detection**
-   - Applying unsupervised methods such as K-Means, Isolation Forest, LOF, and One-Class SVM
-   - Identifying unusual network behavior patterns
-
-6. **Model Tuning & Validation**
-   - Optimizing model performance using GridSearchCV
-   - Validating model stability using cross-validation
-   - Evaluating performance using ROC curves and confusion matrices
-
----
 
 ## Repository Structure
 SentinelNet/
