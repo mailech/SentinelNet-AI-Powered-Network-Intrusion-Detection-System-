@@ -5,12 +5,21 @@
 In this project, Developed **SentinelNet**, an AI-powered Network Intrusion Detection System (NIDS) designed to detect malicious network traffic and cyber-attacks.
 The system uses **machine learning and anomaly detection techniques** to classify network traffic as **normal or suspicious**, and also supports **real-time intrusion detection with alert generation and logging**.
 
-## Project Goal
-The goal of this project is to:
-* Detect cyber attacks in network traffic
-* Classify traffic as normal or malicious
-* Identify anomalies using machine learning
-* Build a **real-time intrusion detection system**
+## Goal of the Project
+1. Develop an AI-based system to detect malicious network traffic.
+2.Classify traffic as **normal or attack** using machine learning.
+3.Analyze network traffic data and identify patterns.
+4.Reduce false alarms while improving detection accuracy.
+5.Generate alerts for suspicious activities.
+
+## Understanding the Core Problem
+
+1. Modern networks continuously exchange data.
+2.Within this traffic, cyber-attacks can occur.
+3.Traditional security systems depend on predefined rules.
+4.Rule-based systems may fail for new or unknown attacks.
+5.Machine Learning helps detect hidden patterns in traffic data.
+6.Main task: Traffic Classification (Normal vs Intrusion).
 
 ## Key Outcomes
 
