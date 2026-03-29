@@ -1,5 +1,4 @@
-
-#Milestone 4 – Alert Generation and Logging
+Milestone 4 – Alert Generation and Logging
 
 1.Alert Generation and Logging:
 a.Real Time Prediction Simulation:
