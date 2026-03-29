@@ -1,4 +1,4 @@
-# Milestone 3 – Anomaly Detection and Model Evaluation
+Milestone 3 – Anomaly Detection and Model Evaluation
 
 1.Anomaly Detection using Unsupervised Learning:
    a.Before classification, anomaly detection techniques were applied to identify unusual patterns in network traffic.
