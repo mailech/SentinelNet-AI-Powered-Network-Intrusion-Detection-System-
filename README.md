@@ -29,11 +29,11 @@ I used the **NSL-KDD dataset**, a widely used benchmark dataset for intrusion de
 | Dataset       | NSL-KDD                      |
 | Training Data | KDDTrain.txt                 |
 | Testing Data  | KDDTest.txt                  |
-| Features      | 40+ network attributes       |
 | Classes       | Normal, DoS, Probe, R2L, U2R |
 
 ## System Workflow
 The complete pipeline of the project is as follows:
+
 Dataset Acquisition → Data Preprocessing → Feature Engineering →
 Model Training → Model Evaluation → Anomaly Detection →
 Model Saving → Real-Time Prediction → Alert Generation → Logging
