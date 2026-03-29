@@ -6,20 +6,19 @@ In this project, Developed **SentinelNet**, an AI-powered Network Intrusion Dete
 The system uses **machine learning and anomaly detection techniques** to classify network traffic as **normal or suspicious**, and also supports **real-time intrusion detection with alert generation and logging**.
 
 ## Goal of the Project
-1. Develop an AI-based system to detect malicious network traffic.
-2.Classify traffic as **normal or attack** using machine learning.
-3.Analyze network traffic data and identify patterns.
-4.Reduce false alarms while improving detection accuracy.
-5.Generate alerts for suspicious activities.
+*Develop an AI-based system to detect malicious network traffic.
+*Classify traffic as **normal or attack** using machine learning.
+*Analyze network traffic data and identify patterns.
+*Reduce false alarms while improving detection accuracy.
+*Generate alerts for suspicious activities.
 
 ## Understanding the Core Problem
-
-1. Modern networks continuously exchange data.
-2.Within this traffic, cyber-attacks can occur.
-3.Traditional security systems depend on predefined rules.
-4.Rule-based systems may fail for new or unknown attacks.
-5.Machine Learning helps detect hidden patterns in traffic data.
-6.Main task: Traffic Classification (Normal vs Intrusion).
+*Modern networks continuously exchange data.
+*Within this traffic, cyber-attacks can occur.
+*Traditional security systems depend on predefined rules.
+*Rule-based systems may fail for new or unknown attacks.
+*Machine Learning helps detect hidden patterns in traffic data.
+*Main task: Traffic Classification (Normal vs Intrusion).
 
 ## Key Outcomes
 
