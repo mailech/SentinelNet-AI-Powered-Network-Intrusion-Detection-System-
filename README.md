@@ -66,7 +66,7 @@ In this step, I prepared the dataset for modeling
 * Ensured **train-test feature alignment**
 * Normalized/standardized data 
 
-###3.Feature Engineering & Selection
+### 3.Feature Engineering & Selection
 This was a key part of my implementation:
 * Performed **correlation analysis**
 * Generated correlation matrix
