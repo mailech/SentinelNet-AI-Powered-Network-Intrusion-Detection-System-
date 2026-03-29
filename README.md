@@ -33,11 +33,10 @@ I used the **NSL-KDD dataset**, a widely used benchmark dataset for intrusion de
 
 ## System Workflow
 The complete pipeline of the project is as follows:
-''''
 Dataset Acquisition → Data Preprocessing → Feature Engineering →
 Model Training → Model Evaluation → Anomaly Detection →
 Model Saving → Real-Time Prediction → Alert Generation → Logging
-'''
+
 ## Module Implementation (Step-by-Step)
 ### 1.Dataset Acquisition & Exploration
 * Downloaded NSL-KDD dataset
