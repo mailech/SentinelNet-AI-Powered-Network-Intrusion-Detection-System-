@@ -1,0 +1,74 @@
+Milestone 2 – Feature Engineering and Model Training:
+
+1.Categorical Feature Conversion:
+   a.The dataset contained categorical attributes such as protocol type, service, and flag. These were converted into numerical format so that machine learning models could process them.
+   b.Protocol type and flag were encoded using one hot encoding, while service was handled using frequency encoding to avoid creating too many columns.
+
+2.Preparing Feature Matrix:
+   a.The target variable representing attack categories was converted into numerical form using encoding techniques.
+   b.Irrelevant columns such as labels and metadata were removed from the dataset.
+   c.Training and testing feature sets were created and aligned to maintain consistency.
+
+3.Removing Highly Correlated Features:
+   a.Correlation analysis was performed to identify redundant features.
+   b.Features with very high correlation were removed to reduce duplication.
+   c.This helped in improving model performance and reducing overfitting.
+
+4.Removing Low Variance Features:
+   a.Features with very low variance were identified.
+   b.These features were removed as they contribute very little to prediction.
+   c.This step helped in reducing noise in the dataset.
+
+5.Feature Importance Analysis:
+   a.A Random Forest model was used to calculate feature importance scores.
+   b.Features were ranked based on their contribution to prediction.
+   c.Low importance features were removed to keep only useful ones.
+
+6.Feature Scaling:
+   a.Numerical features were scaled to bring them into a uniform range.
+   b.This ensures that no feature dominates due to larger values.
+   c.It improves stability and performance of machine learning models.
+
+7.Handling Class Imbalance:
+   a.The dataset had uneven distribution of attack classes.
+   b.SMOTE technique was applied on training data to balance minority classes.
+   c.Synthetic samples were generated to improve learning of rare attack types.
+
+8.Dimensionality Reduction:
+   a.Principal Component Analysis was applied to reduce dimensionality.
+   b.Data was transformed into fewer components for visualization.
+   c.This helped in understanding class separation in the dataset.
+
+9.Saving Processed Data:
+   a.The final processed training dataset was saved after applying all transformations.
+   b.The test dataset was saved without applying SMOTE to maintain real-world distribution.
+   c.These datasets were used for model training in the next phase.
+
+10.Model Training:
+    a.Machine learning models such as Random Forest, SVM, and Logistic Regression were used.
+    b.Models were trained on the processed training dataset.
+    c.They learned patterns to classify normal and attack traffic.
+
+11.Model Evaluation:
+    a.Model performance was evaluated using accuracy, precision, recall, and F1 score.
+    b.These metrics helped measure detection performance effectively.
+    c.Balanced evaluation ensured both detection and false alarms were considered.
+
+12.Performance Analysis:
+    a.A classification report was generated for each attack category.
+    b.A confusion matrix was used to analyze correct and incorrect predictions.
+    c.This helped in identifying model weaknesses.
+
+13.Model Improvement:
+    a.Hyperparameter tuning was performed using cross validation.
+    b.Different parameter combinations were tested.
+    c.The best performing model was selected based on evaluation metrics.
+
+Summary:
+1.The dataset was cleaned and transformed by converting categorical features into numerical form and removing irrelevant, redundant, and low variance features.
+2.Important features were selected and scaled, and class imbalance was handled using SMOTE to improve model learning.
+3.PCA was applied to visualize data patterns and understand class separation.
+4.Machine learning models were trained to classify network traffic into normal and attack categories.
+5.Model performance was evaluated using accuracy, precision, recall, and F1 score.
+6.Performance analysis was done using confusion matrix and classification report.
+7.Hyperparameter tuning was applied to improve the model and select the best performing one.

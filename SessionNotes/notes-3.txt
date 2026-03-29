@@ -1,0 +1,70 @@
+# Milestone 3 – Anomaly Detection and Model Evaluation
+
+1.Anomaly Detection using Unsupervised Learning:
+   a.Before classification, anomaly detection techniques were applied to identify unusual patterns in network traffic.
+   b.These methods help in detecting unknown or unseen attacks.
+
+2.K Means Clustering:
+   a.K Means algorithm was used to group similar network traffic into clusters.
+   b.Each cluster represents a pattern of network behavior.
+   c.Data points far from cluster centers were treated as anomalies.
+
+3.Isolation Forest:
+   a.Isolation Forest algorithm was used to detect anomalies by isolating rare data points.
+   b.It assigns anomaly scores to each record.
+   c.Records with high anomaly scores were considered suspicious.
+
+4.Local Outlier Factor:
+   a.This method compares the density of a data point with its neighbors.
+   b.Points with significantly lower density were marked as outliers.
+   c.It helps in identifying local anomalies in the dataset.
+
+5.One Class SVM:
+   a.One Class SVM was used to learn the boundary of normal traffic.
+   b.Any data point outside this boundary was treated as an anomaly.
+   c.It is useful for detecting novel or unknown attacks.
+
+6.Anomaly Visualization:
+   a.Graphs and plots were created to visualize anomaly scores.
+   b.Distribution of anomalies across different attack types was analyzed.
+   c.This helped in understanding abnormal behavior in the dataset.
+
+7.Model Evaluation and Fine Tuning:
+a.Data Splitting:
+ 1.The dataset was divided into training and testing sets using stratified sampling.
+ 2.This ensured equal representation of all attack classes.
+
+b.Hyperparameter Tuning:
+ 1.Grid search with cross validation was used to find the best model parameters.
+ 2.Different combinations were tested to improve model performance.
+
+c.Model Training:
+  1.Multiple models such as Random Forest, Decision Tree, and Gradient Boosting were trained.
+  2.Each model learned to classify network traffic into different attack categories.
+
+d.Performance Metrics:
+ 1.Models were evaluated using accuracy, precision, recall, and F1 score.
+ 2.These metrics ensured balanced evaluation of detection performance.
+
+e.Classification Report:
+    A detailed report was generated showing performance for each attack class.
+
+a.Confusion Matrix:
+    A confusion matrix was used to analyze correct and incorrect predictions.
+b.ROC Curve and AUC:
+ 1.ROC curves were plotted to evaluate model performance.
+ 2.AUC value was used to measure how well the model distinguishes between classes.
+c.Cross Validation:
+    Stratified K Fold cross validation was applied to ensure model stability.
+d.Model Selection:
+   The best performing model was selected based on evaluation metrics.
+e.Model Saving:
+The final trained model was saved for future use.
+ 
+8.Outcome:
+a. Successfully applied anomaly detection techniques
+b. Built and compared multiple classification models
+c. Improved performance using tuning and validation
+d. Evaluated models using metrics and visual tools
+e. Selected the best model for intrusion detection
+f. Prepared system for alert generation

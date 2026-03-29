@@ -1,0 +1,34 @@
+
+#Milestone 4 – Alert Generation and Logging
+
+1.Alert Generation and Logging:
+a.Real Time Prediction Simulation:
+The trained model was used to simulate real time predictions on test data.
+Network traffic records were passed through the model to classify normal and attack behavior.
+
+b.Intrusion Detection:
+The system analyzed input data and identified suspicious or malicious traffic.
+Different types of attacks were detected based on learned patterns.
+
+c.Alert Generation:
+Alerts were generated whenever an intrusion was detected.
+These alerts help in identifying potential security threats quickly.
+
+d.Logging Results:
+All predictions were stored in a structured format for tracking.
+Logs included details such as predicted class and detection status.
+
+e.Data Storage:
+Results were saved in formats such as CSV or text files.
+This enables easy monitoring and further analysis.
+
+f.Basic Visualization:
+Simple graphs were created to show number of detected attacks.
+This helps in understanding system performance.
+
+2. Outcome:
+a.Successfully simulated real time intrusion detection
+b.Generated alerts for suspicious network activity
+c.Logged detection results in structured format
+d.Stored outputs for future analysis
+e.Built a complete alert generation module
