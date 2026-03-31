@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SentinelNet — Network Intrusion Detection</title>
+  <meta name="description" content="SentinelNet: AI-powered network intrusion detection built on NSL-KDD using Random Forest." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- App stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────── -->
+  <aside>
+    <div class="brand">
+      <div class="brand-row">
+        <div class="brand-icon">🛡️</div>
+        <div>
+          <div class="brand-name">SentinelNet</div>
+          <div class="brand-sub">Intrusion Detection</div>
+        </div>
+      </div>
+    </div>
+
+    <nav>
+      <div class="nav-sec">Monitoring</div>
+      <button class="nav-item active" onclick="scrollToSection('overview', this)">
+        <span class="ni">📊</span>Overview
+        <span class="live-pill"><span class="live-dot"></span>LIVE</span>
+      </button>
+      <button class="nav-item" onclick="scrollToSection('upload-sec', this)">
+        <span class="ni">📂</span>File Upload
+      </button>
+      <button class="nav-item" onclick="scrollToSection('analyzer-sec', this)">
+        <span class="ni">🔍</span>Analyzer
+      </button>
+      <button class="nav-item" onclick="scrollToSection('alerts-sec', this)">
+        <span class="ni">🚨</span>Alerts
+      </button>
+
+      <div class="nav-sec">Details</div>
+      <button class="nav-item" onclick="scrollToSection('metrics-sec', this)">
+        <span class="ni">📈</span>Model Metrics
+      </button>
+      <button class="nav-item" onclick="scrollToSection('about-sec', this)">
+        <span class="ni">ℹ️</span>About
+      </button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="model-pill">
+        <div class="mpill-dot"></div>
+        <div>
+          <div class="mpill-title">Model Active</div>
+          <div class="mpill-sub">Random Forest · NSL-KDD</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Main column ──────────────────────────────────────────── -->
+  <div class="main-col">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div>
+        <h1>🛡️ SentinelNet — Network Intrusion Detection</h1>
+        <div class="topbar-sub" id="last-refresh">Loading data…</div>
+      </div>
+      <button class="btn btn-primary" onclick="refreshAll()">⟳ Refresh</button>
+    </header>
+
+    <div class="content">
+
+      <!-- ── 1. Dataset Overview ─────────────────────────────── -->
+      <div class="section" id="overview">
+        <div class="sec-header">
+          <span class="sec-title">📊 Dataset Overview</span>
+          <span class="sec-badge" id="ds-badge">NSL-KDD Training Set</span>
+        </div>
+        <div class="stats-row" id="stats-row">
+          <div class="spin-wrap"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="section">
+        <div class="charts-row">
+          <div class="panel">
+            <div class="panel-title"><span class="dot dot-purple"></span>Attack Type Distribution</div>
+            <canvas id="attackChart"></canvas>
+          </div>
+          <div class="panel">
+            <div class="panel-title"><span class="dot dot-blue"></span>Protocol Breakdown</div>
+            <canvas id="protoChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 2. File Upload & Detect ────────────────────────── -->
+      <div class="section" id="upload-sec">
+        <div class="sec-header">
+          <span class="sec-title">📂 Upload &amp; Detect</span>
+          <span class="sec-badge">CSV / TXT (NSL-KDD format)</span>
+        </div>
+        <div class="panel">
+
+          <!-- Drop zone -->
+          <div class="upload-zone" id="drop-zone"
+               onclick="document.getElementById('file-input').click()"
+               ondragover="onDragOver(event)"
+               ondragleave="onDragLeave()"
+               ondrop="onDrop(event)">
+            <div class="upload-icon">📁</div>
+            <div class="upload-title">Drop your network traffic file here</div>
+            <div class="upload-sub">or click to browse · CSV or TXT · NSL-KDD format · up to 50 MB</div>
+          </div>
+          <input type="file" id="file-input" accept=".csv,.txt" onchange="handleFile(this.files[0])" />
+
+          <div style="text-align:center;margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button class="btn btn-primary" id="upload-btn"
+                    onclick="document.getElementById('file-input').click()">📂 Choose File</button>
+            <button class="btn btn-ghost" onclick="loadSampleFile()">🧪 Try Sample Data</button>
+          </div>
+
+          <!-- Upload results (hidden until a file is processed) -->
+          <div class="upload-result" id="upload-result">
+            <div id="upload-fname" style="font-size:14px;font-weight:700;margin-bottom:14px"></div>
+            <div class="result-stats" id="upload-stat-row"></div>
+
+            <div class="panel" style="margin-bottom:16px;background:var(--surface2)">
+              <div class="panel-title"><span class="dot dot-red"></span>Severity Breakdown (Attacks)</div>
+              <div id="sev-bars"></div>
+            </div>
+
+            <div class="panel-title" style="margin-bottom:10px">
+              <span class="dot dot-blue"></span>Connection Predictions (first 100 rows)
+            </div>
+            <div style="overflow-x:auto;max-height:400px;overflow-y:auto">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th><th>Protocol</th><th>Service</th>
+                    <th>Prediction</th><th>Severity</th><th>Confidence</th>
+                  </tr>
+                </thead>
+                <tbody id="upload-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 3. Single Connection Analyzer ─────────────────── -->
+      <div class="section" id="analyzer-sec">
+        <div class="sec-header">
+          <span class="sec-title">🔍 Single Connection Analyzer</span>
+          <span class="sec-badge">Manual Prediction</span>
+        </div>
+        <div class="panel">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:16px">
+            Enter network connection details to check if it's normal or an intrusion attempt.
+          </p>
+
+          <div class="form-grid">
+            <div class="fg">
+              <label for="p-dur">Duration (s)</label>
+              <input type="number" id="p-dur" class="fc" value="0" min="0" />
+            </div>
+            <div class="fg">
+              <label for="p-proto">Protocol</label>
+              <select id="p-proto" class="fc">
+                <option value="tcp">TCP</option>
+                <option value="udp">UDP</option>
+                <option value="icmp">ICMP</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label for="p-svc">Service</label>
+              <select id="p-svc" class="fc">
+                <option value="http">HTTP</option>
+                <option value="ftp">FTP</option>
+                <option value="smtp">SMTP</option>
+                <option value="ssh">SSH</option>
+                <option value="dns">DNS</option>
+                <option value="telnet">Telnet</option>
+                <option value="private">Private</option>
+                <option value="eco_i">Eco_i</option>
+                <option value="domain_u">Domain_U</option>
+                <option value="auth">Auth</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label for="p-flag">Flag</label>
+              <select id="p-flag" class="fc">
+                <option value="SF">SF (Normal)</option>
+                <option value="S0">S0 (SYN no reply)</option>
+                <option value="REJ">REJ (Rejected)</option>
+                <option value="RSTO">RSTO (Reset)</option>
+                <option value="SH">SH (SYN + FIN)</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label for="p-src">Src Bytes</label>
+              <input type="number" id="p-src" class="fc" value="491" min="0" />
+            </div>
+            <div class="fg">
+              <label for="p-dst">Dst Bytes</label>
+              <input type="number" id="p-dst" class="fc" value="0" min="0" />
+            </div>
+            <div class="fg">
+              <label for="p-cnt">Connection Count</label>
+              <input type="number" id="p-cnt" class="fc" value="2" min="0" />
+            </div>
+            <div class="fg">
+              <label for="p-srvcnt">Srv Count</label>
+              <input type="number" id="p-srvcnt" class="fc" value="2" min="0" />
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" id="analyze-btn" onclick="runAnalyzer()">⚡ Analyze</button>
+            <button class="btn btn-ghost" onclick="loadAttackExample()">⚠️ Load Attack Example</button>
+            <button class="btn btn-ghost" onclick="loadNormalExample()">✅ Load Normal Example</button>
+          </div>
+          <div class="analyze-result" id="analyze-result"></div>
+        </div>
+      </div>
+
+      <!-- ── 4. Sample Intrusion Alerts ────────────────────── -->
+      <div class="section" id="alerts-sec">
+        <div class="sec-header">
+          <span class="sec-title">🚨 Sample Intrusion Alerts</span>
+          <span class="sec-badge" id="alert-count-badge">Loading…</span>
+        </div>
+        <div class="panel">
+          <div class="filter-row">
+            <button class="fbtn active" onclick="filterAlerts('All', this)">All</button>
+            <button class="fbtn" onclick="filterAlerts('Critical', this)">🔴 Critical</button>
+            <button class="fbtn" onclick="filterAlerts('High', this)">🟠 High</button>
+            <button class="fbtn" onclick="filterAlerts('Medium', this)">🟡 Medium</button>
+            <button class="fbtn" onclick="filterAlerts('Low', this)">🟢 Low</button>
+          </div>
+          <div class="alerts-wrap" id="alerts-area">
+            <div class="spin-wrap"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 5. Model Performance Metrics ──────────────────── -->
+      <div class="section" id="metrics-sec">
+        <div class="sec-header">
+          <span class="sec-title">📈 Model Performance</span>
+          <span class="sec-badge">Random Forest · Tuned</span>
+        </div>
+        <div class="metrics-row" id="metrics-row">
+          <div class="spin-wrap"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- ── 6. About ───────────────────────────────────────── -->
+      <div class="section" id="about-sec">
+        <div class="panel">
+          <div class="panel-title"><span class="dot dot-blue"></span>About SentinelNet</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:13px;color:var(--muted);line-height:1.75">
+            <div>
+              <p><strong style="color:var(--text)">Dataset:</strong>
+                NSL-KDD — 125,973 training + 22,544 test records, 41 features per connection.</p>
+              <br />
+              <p><strong style="color:var(--text)">Pipeline:</strong>
+                EDA → Preprocessing (OneHot + StandardScaler) → SMOTE balancing →
+                Random Forest feature selection → Model training →
+                GridSearchCV tuning → Anomaly detection (KMeans, Isolation Forest, LOF, One-Class SVM).</p>
+            </div>
+            <div>
+              <p><strong style="color:var(--text)">Attack Categories:</strong></p>
+              <ul style="margin-top:8px;padding-left:16px;list-style:disc">
+                <li><strong style="color:var(--red)">DoS</strong> — Denial of Service (Neptune, Smurf, Back…)</li>
+                <li><strong style="color:var(--accent)">Probe</strong> — Port scanning (Nmap, Satan, IPsweep…)</li>
+                <li><strong style="color:var(--accent2)">R2L</strong> — Remote-to-Local (FTP Write, Guess Passwd…)</li>
+                <li><strong style="color:var(--orange)">U2R</strong> — User-to-Root (Buffer Overflow, Rootkit…)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main-col -->
+</div><!-- /wrap -->
+
+<!-- Toast notification -->
+<div id="toast"></div>
+
+<!-- App JavaScript -->
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
