@@ -202,7 +202,7 @@ Identification of easiest and hardest classes
 Analysis of confusion patterns
 
 Website Images
-<img width="1917" height="918" alt="image" src="https://github.com/user-attachments/assets/b8a8df52-f6e8-4038-8f82-5a5e1c1b3a02" />
+<img width="1912" height="911" alt="home" src="https://github.com/user-attachments/assets/fd944e7d-4370-4a12-a1f7-1d2e7e734b25" />
 <img width="1915" height="926" alt="upload" src="https://github.com/user-attachments/assets/88384da2-3a4c-4372-87be-e1a60ac43721" />
 <img width="1898" height="907" alt="dashboard1" src="https://github.com/user-attachments/assets/2c89bb04-11f0-4976-a197-afea31b6a92d" />
 <img width="1901" height="916" alt="dashboard2" src="https://github.com/user-attachments/assets/93311700-068a-41e4-b747-a9309bf4d83a" />
