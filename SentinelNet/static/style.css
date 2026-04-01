@@ -4,8 +4,14 @@
 
 body { 
     background: radial-gradient(circle at center, #0a192f 0%, #02060c 100%); 
-    color: #00d2ff; height: 100vh; width: 100vw; 
-    display: flex; justify-content: center; align-items: center; overflow: hidden; 
+    color: #00d2ff; 
+    min-height: 100vh;   /* change from height */
+    width: 100vw; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .cyber-bg { 
