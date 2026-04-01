@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SentinelNet Pro - Advanced IDS</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#050810;--panel:#0f1523;--border:rgba(45,55,72,.4);--text:#f1f5f9;--muted:#8292a8;--accent:#3b82f6;--success:#059669;--danger:#ef4444;--warning:#f59e0b}
+        *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,sans-serif}
+        body{display:flex;height:100vh;background:var(--bg);background-image:linear-gradient(rgba(15,20,35,.8) 1px,transparent 1px),linear-gradient(90deg,rgba(15,20,35,.8) 1px,transparent 1px);background-size:30px 30px;color:var(--text);overflow:hidden}
+        .sidebar{width:250px;min-height:100vh;padding:24px 20px;border-right:1px solid var(--border);background:rgba(10,14,23,.96);display:flex;flex-direction:column}
+        .logo{display:flex;gap:12px;align-items:center;font-size:1.2rem;font-weight:700;margin-bottom:32px}.logo-icon{width:32px;height:32px;border-radius:6px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700}
+        nav{display:flex;flex-direction:column;gap:6px;flex:1}.nav-item{padding:12px 16px;border-radius:6px;color:var(--muted);cursor:pointer;font-size:.85rem}.nav-item:hover,.nav-item.active{background:rgba(59,130,246,.15);color:var(--accent)}.nav-item.active{border-left:3px solid var(--accent);border-radius:0 6px 6px 0}
+        .main{flex:1;padding:30px 40px;overflow:auto}.header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:28px}
+        .sub{color:var(--muted);font-size:.85rem;margin-top:4px}.btn{padding:8px 16px;border-radius:4px;font-weight:600;font-size:.8rem;background:rgba(59,130,246,.1);color:var(--accent);border:1px solid rgba(59,130,246,.3);cursor:pointer}.btn:disabled{opacity:.5;cursor:not-allowed}.btn-danger{background:rgba(239,68,68,.1);color:var(--danger);border-color:rgba(239,68,68,.3)}
+        .view{display:none}.view.active{display:block}.glass{background:rgba(15,21,35,.85);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+        .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-bottom:24px}.card{padding:18px 16px;border-top:3px solid var(--border)}.card h3{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}.value{font-size:1.5rem;font-weight:700;font-family:"JetBrains Mono",monospace}
+        .charts{display:grid;grid-template-columns:2fr 1fr;gap:20px}.stack{display:flex;flex-direction:column;gap:20px}.panel{padding:20px}.title{font-size:.85rem;font-weight:600;color:#e2e8f0;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+        .table-wrap{overflow:auto}.table-title{padding:14px 20px;background:rgba(0,0,0,.2);border-bottom:1px solid rgba(255,255,255,.04)}table{width:100%;border-collapse:collapse}th,td{padding:12px 20px;text-align:left;border-bottom:1px solid rgba(255,255,255,.03);font-size:.84rem}th{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;background:rgba(0,0,0,.25)}.mono{font-family:"JetBrains Mono",monospace;font-size:.8rem}
+        .badge{display:inline-block;padding:4px 8px;border-radius:4px;font-size:.7rem;font-weight:600;text-transform:uppercase}.badge-normal{background:rgba(5,150,105,.15);color:var(--success);border:1px solid rgba(5,150,105,.3)}.badge-attack{background:rgba(239,68,68,.15);color:var(--danger);border:1px solid rgba(239,68,68,.3)}.badge-warning{background:rgba(245,158,11,.1);color:var(--warning);border:1px solid rgba(245,158,11,.3)}
+        .action-none{color:var(--muted);font-size:.75rem;font-style:italic}.action-btn{background:transparent;color:var(--danger);border:1px solid var(--danger);border-radius:4px;padding:4px 12px;font-size:.7rem;font-weight:600;cursor:pointer}
+        .upload{border:2px dashed rgba(59,130,246,.3);border-radius:8px;padding:54px 20px;text-align:center;background:rgba(0,0,0,.2);cursor:pointer;transition:.2s;margin-bottom:12px}.upload:hover,.upload.drag{border-color:var(--accent);background:rgba(59,130,246,.05)}.feedback{min-height:18px;margin-bottom:18px;color:var(--muted);font-size:.8rem}.feedback.success{color:var(--success)}.feedback.error{color:var(--danger)}
+        .status-box{padding:16px;border-radius:6px;background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.1)}.dot{width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;box-shadow:0 0 10px var(--success);margin-right:8px}
+        @media(max-width:1180px){.grid{grid-template-columns:repeat(3,1fr)}.charts{grid-template-columns:1fr}}
+        @media(max-width:860px){body{flex-direction:column;overflow:auto}.sidebar{width:100%;min-height:auto;border-right:none;border-bottom:1px solid var(--border)}.main{padding:24px 16px}.header{flex-direction:column;align-items:flex-start}.grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo"><div class="logo-icon">SN</div><div>SentinelNet</div></div>
+        <nav>
+            <div class="nav-item active" onclick="switchView('overview', this)">Analysis Dashboard</div>
+            <div class="nav-item" onclick="switchView('live', this)">Live Traffic</div>
+            <div class="nav-item" onclick="switchView('setup', this)">Data Setup</div>
+            <div class="nav-item" onclick="switchView('ai', this)">AI Diagnostics</div>
+        </nav>
+        <div class="status-box">
+            <div style="font-size:.75rem;font-weight:600;text-transform:uppercase;margin-bottom:8px"><span class="dot"></span>Monitor Active</div>
+            <div style="font-size:.72rem;color:var(--muted);line-height:1.5">Dataset stream bound to the project analysis pipeline.</div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="header">
+            <div>
+                <h1 id="page-title">Analysis Dashboard</h1>
+                <div class="sub">Real-time threat detection and anomaly analytics framework</div>
+            </div>
+            <div style="display:flex;gap:12px">
+                <button class="btn" onclick="downloadJSONReport()" id="btn-download" style="background:rgba(59,130,246,.1);color:var(--accent);border-color:rgba(59,130,246,.3)">Download JSON Report</button>
+                <button class="btn btn-danger" onclick="toggleMonitor()" id="btn-monitor">Stop Monitor</button>
+            </div>
+        </div>
+
+        <section id="view-overview" class="view active">
+            <div class="grid">
+                <div class="card glass" style="border-top-color:var(--accent)"><h3>Total Records</h3><div class="value" id="dash-total">...</div></div>
+                <div class="card glass" style="border-top-color:var(--danger)"><h3>Attack Samples</h3><div class="value" id="dash-attacks" style="color:var(--danger)">...</div></div>
+                <div class="card glass" style="border-top-color:var(--success)"><h3>Normal Samples</h3><div class="value" id="dash-normal" style="color:var(--success)">...</div></div>
+                <div class="card glass" style="border-top-color:var(--warning)"><h3>Attack Rating</h3><div class="value" id="dash-rating" style="font-size:1.1rem;color:var(--warning)">...</div></div>
+                <div class="card glass" style="border-top-color:var(--accent)"><h3>System Security</h3><div class="value" id="dash-security" style="font-size:1.1rem;color:var(--success)">Optimum</div></div>
+                <div class="card glass" style="border-top-color:var(--danger);background:rgba(239,68,68,.05)"><h3 style="color:var(--danger)">Intrusions Blocked</h3><div class="value" id="dash-blocked" style="color:var(--danger)">0</div></div>
+            </div>
+            <div class="charts">
+                <div class="stack">
+                    <div class="glass panel">
+                        <div class="title">Threat Activity Graph (Live)</div>
+                        <div style="height:240px"><canvas id="timelineChart"></canvas></div>
+                    </div>
+                    <div class="glass table-wrap">
+                        <div class="table-title title" style="margin:0">Recent Events</div>
+                        <table>
+                            <thead><tr><th>Reason / Status</th><th>Time</th><th>Security Rating</th></tr></thead>
+                            <tbody id="dash-recent-events"><tr><td colspan="3" style="text-align:center;color:var(--muted);font-style:italic">Waiting for live traffic batches...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="stack">
+                    <div class="glass panel">
+                        <div class="title">Attack Type Dist.</div>
+                        <div style="height:180px"><canvas id="pieChart"></canvas></div>
+                    </div>
+                    <div class="glass panel">
+                        <div class="title">Protocol Dist.</div>
+                        <div style="height:200px"><canvas id="barChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-live" class="view">
+            <div style="margin-bottom:20px"><h2 style="font-size:1.2rem">Real-time Data Stream</h2><div class="sub">Streaming packets from the active project dataset or uploaded file.</div></div>
+            <div class="glass table-wrap">
+                <table>
+                    <thead><tr><th>Timestamp</th><th>Traffic Type</th><th>Status</th><th>AI Score</th><th>Action</th></tr></thead>
+                    <tbody id="live-table-body"><tr><td colspan="5" style="text-align:center;padding:30px;color:var(--muted);font-style:italic">Connecting to packet capture interface...</td></tr></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="view-setup" class="view">
+            <div class="glass panel">
+                <h2 style="margin-bottom:18px;font-size:1.2rem">Data System Architecture</h2>
+                <div class="sub" style="line-height:1.6;margin-bottom:20px">
+                    The dashboard uses this project's real dataset flow with <code>labeled_CSV</code> for display records and <code>log_transformed_train.csv</code> for the trained analysis schema.<br>
+                    Drop a <code>.csv</code>, <code>.txt</code>, <code>.xlsx</code>, or <code>.xls</code> file and the full record set will be analyzed before the graphs refresh.
+                </div>
+                <div class="upload" id="dropzone" onclick="document.getElementById('file-upload').click()">
+                    <div style="font-size:1.05rem;color:var(--accent);font-weight:700;letter-spacing:.12em;margin-bottom:12px">UPLOAD</div>
+                    <h3 id="dropzone-title" style="margin-bottom:6px;font-size:1rem">Upload Test Dataset File</h3>
+                    <p id="dropzone-subtitle" style="color:var(--muted);font-size:.8rem">Click or drag supported files here. Analysis starts automatically after drop.</p>
+                </div>
+                <input type="file" id="file-upload" accept=".csv,.txt,.xlsx,.xls,.data" style="display:none" onchange="handleFileUpload(event)">
+                <div id="upload-feedback" class="feedback">Waiting for a dataset file.</div>
+                <div style="text-align:right"><button class="btn" id="analyze-btn" onclick="triggerAnalysis()" disabled style="background:rgba(5,150,105,.15);color:var(--success);border:1px solid rgba(5,150,105,.3)">Analyze File</button></div>
+            </div>
+        </section>
+
+        <section id="view-ai" class="view">
+            <div class="glass panel">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px">
+                    <h2 style="font-size:1.2rem">Cloud Vector Mitigation</h2>
+                    <button class="btn" onclick="requestAIAnalysis(event)">Request LLM Evaluation</button>
+                </div>
+                <div id="ai-output" style="padding:24px;background:rgba(0,0,0,.2);border-left:3px solid var(--accent);border-radius:4px;min-height:100px;line-height:1.6;font-family:'JetBrains Mono',monospace;font-size:.85rem">[SYSTEM_AWAIT] Execute vector evaluation to derive mitigation signatures for actively logged events.</div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let isMonitoring = true, intrusionsBlocked = 0, selectedFile = null, isAnalyzing = false;
+        let sessionData = { detectedThreats: new Set() }, attackCountMap = {};
+        const COLORS = { success:"#059669", danger:"#ef4444", warning:"#f59e0b", accent:"#3b82f6", grid:"rgba(255,255,255,.05)", text:"#94a3b8" };
+        const PALETTE = [COLORS.danger, COLORS.success, COLORS.warning, "#8b5cf6", "#ec4899"];
+        const CATEGORY_ORDER = ["DoS","Normal","Probe","R2L","U2R"];
+        const API_BASE = window.location.port === "8000" ? "" : "http://127.0.0.1:8000";
+        Chart.defaults.color = COLORS.text; Chart.defaults.font.family = "Inter";
+
+        const timelineChart = new Chart(document.getElementById("timelineChart").getContext("2d"), { type:"line", data:{ labels:Array(30).fill(""), datasets:[{ data:Array(30).fill(0), borderColor:COLORS.accent, backgroundColor:"rgba(59,130,246,.10)", fill:true, tension:.35, borderWidth:2, pointRadius:0 }] }, options:{ responsive:true, maintainAspectRatio:false, animation:{duration:0}, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true,max:100,grid:{color:COLORS.grid}}, x:{display:false,grid:{display:false}} } } });
+        const pieChart = new Chart(document.getElementById("pieChart").getContext("2d"), { type:"doughnut", data:{ labels:[], datasets:[{ data:[], backgroundColor:[], borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, cutout:"70%", plugins:{ legend:{ position:"right", labels:{ boxWidth:10, font:{size:10} } } } } });
+        const barChart = new Chart(document.getElementById("barChart").getContext("2d"), { type:"bar", data:{ labels:[], datasets:[{ data:[], backgroundColor:COLORS.accent, borderRadius:2 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false}, ticks:{font:{size:10}}}, y:{grid:{color:COLORS.grid}, ticks:{font:{size:10}}} } } });
+
+        const fmt = (v) => Number(v || 0).toLocaleString();
+        const feedback = (msg, type="") => { const el = document.getElementById("upload-feedback"); el.textContent = msg; el.className = `feedback${type ? ` ${type}` : ""}`; };
+        const apiUrl = (path) => `${API_BASE}${path}`;
+        async function readApiResponse(res){
+            const text = await res.text();
+            let data = null;
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch (err) {
+                if(!res.ok){
+                    throw new Error(text || `Request failed with status ${res.status}`);
+                }
+                throw new Error("Server returned a non-JSON response.");
+            }
+            if(!res.ok){
+                throw new Error(data?.detail || data?.message || text || `Request failed with status ${res.status}`);
+            }
+            return data;
+        }
+        function resetUploadText(){ document.getElementById("dropzone-title").innerText = selectedFile ? selectedFile.name : "Upload Test Dataset File"; document.getElementById("dropzone-subtitle").innerText = selectedFile ? "File selected. Full dataset analysis will refresh the dashboard." : "Click or drag supported files here. Analysis starts automatically after drop."; }
+        function risk(total, attacks){ const ratio = total > 0 ? attacks / total : 0; let rating="Low", rateColor=COLORS.success, sec="Optimum", secColor=COLORS.success; if(ratio > .3){ rating="Critical"; rateColor=COLORS.danger; sec="At Risk"; secColor=COLORS.danger; } else if(ratio > .1){ rating="Moderate"; rateColor=COLORS.warning; sec="Minimal"; secColor=COLORS.warning; } document.getElementById("dash-rating").innerText = rating; document.getElementById("dash-rating").style.color = rateColor; document.getElementById("dash-security").innerText = sec; document.getElementById("dash-security").style.color = secColor; }
+        function seedPie(data){ attackCountMap = {}; CATEGORY_ORDER.forEach((k) => attackCountMap[k] = 0); Object.keys(data.category_breakdown || {}).forEach((k) => { if(CATEGORY_ORDER.includes(k)) attackCountMap[k] = Number(data.category_breakdown[k] || 0); }); }
+        function updatePie(){ const labels = CATEGORY_ORDER.slice(); const vals = labels.map((n) => Number(attackCountMap[n] || 0)); const total = vals.reduce((a,b) => a+b, 0); pieChart.data.labels = labels; pieChart.data.datasets[0].data = total > 0 ? vals : [1,0,0,0,0]; pieChart.data.datasets[0].backgroundColor = labels.map((_,i) => PALETTE[i % PALETTE.length]); pieChart.update(); }
+        function renderStats(data){ document.getElementById("dash-total").innerText = fmt(data.total); document.getElementById("dash-attacks").innerText = fmt(data.attacks); document.getElementById("dash-normal").innerText = fmt(data.normal); risk(Number(data.total || 0), Number(data.attacks || 0)); seedPie(data); updatePie(); const protocols = data.protocols || {}; barChart.data.labels = Object.keys(protocols).map((k) => String(k).toUpperCase()); barChart.data.datasets[0].data = Object.values(protocols); barChart.update(); sessionData.detectedThreats = new Set(); (data.attack_breakdown || []).forEach((item) => { if(item && item.name && Number(item.count || 0) > 0) sessionData.detectedThreats.add(item.name); }); }
+        function clearTables(){ document.getElementById("live-table-body").innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--muted);font-style:italic">Waiting for the next analyzed traffic batch...</td></tr>'; document.getElementById("dash-recent-events").innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);font-style:italic">Waiting for live traffic batches...</td></tr>'; }
+        function addPacket(p){ const id = `tr-${Date.now()}-${Math.floor(Math.random()*100000)}`; const tbody = document.getElementById("live-table-body"); if(tbody.innerText.includes("Connecting") || tbody.innerText.includes("Waiting")) tbody.innerHTML = ""; const score = `${Number(p.confidence || 0).toFixed(2)}%`; const action = p.is_normal ? '<span class="action-none">None</span>' : `<button onclick="triggerQuarantine('${id}', this)" class="action-btn">Quarantine</button>`; tbody.insertAdjacentHTML("afterbegin", `<tr id="${id}"><td class="mono">${p.timestamp}</td><td style="font-weight:500;color:${p.is_normal ? '#e2e8f0' : COLORS.danger}">${p.is_normal ? 'User Activity' : 'Suspicious Packet'}</td><td><span class="badge ${p.is_normal ? 'badge-normal' : 'badge-attack'}">${p.is_normal ? 'Normal' : 'Intrusion'}</span></td><td class="mono" style="font-weight:600">${score}</td><td>${action}</td></tr>`); while(tbody.children.length > 20) tbody.removeChild(tbody.lastChild);
+            const recent = document.getElementById("dash-recent-events"); if(recent.innerText.includes("Waiting")) recent.innerHTML = ""; recent.insertAdjacentHTML("afterbegin", `<tr><td><b style="font-size:.75rem;color:${p.is_normal ? COLORS.success : COLORS.danger}">${p.is_normal ? 'NORMAL' : 'INTRUSION'}</b><br><span style="font-size:.7rem;color:var(--muted)">${p.is_normal ? 'Standard Comms' : `Alert ID: ${String(p.prediction || 'UNKNOWN').toUpperCase()}`}</span></td><td class="mono">${p.timestamp}</td><td>${p.is_normal ? `<span class="badge badge-normal">${score}</span>` : `<span class="badge badge-warning">${score}</span>`}</td></tr>`); while(recent.children.length > 6) recent.removeChild(recent.lastChild); }
+        function updateTimeline(batch){ const rate = Number(batch?.attack_rate || 0); timelineChart.data.labels.push(new Date().toLocaleTimeString([], {hour12:false})); timelineChart.data.labels.shift(); timelineChart.data.datasets[0].data.push(rate); timelineChart.data.datasets[0].data.shift(); if(rate > 30){ timelineChart.data.datasets[0].borderColor = COLORS.danger; timelineChart.data.datasets[0].backgroundColor = "rgba(239,68,68,.15)"; } else if(rate > 10){ timelineChart.data.datasets[0].borderColor = COLORS.warning; timelineChart.data.datasets[0].backgroundColor = "rgba(245,158,11,.12)"; } else { timelineChart.data.datasets[0].borderColor = COLORS.accent; timelineChart.data.datasets[0].backgroundColor = "rgba(59,130,246,.10)"; } timelineChart.update(); }
+        async function initial(){ try { const res = await fetch(apiUrl("/dataset-stats")); const data = await readApiResponse(res); renderStats(data); feedback(`Loaded project dataset ${data.source_name || ""}`.trim(), "success"); } catch (e) { console.error(e); feedback(`Unable to load initial dataset stats. ${e.message}`, "error"); } }
+        async function poll(){ if(!isMonitoring || isAnalyzing) return; try { const res = await fetch(apiUrl("/live-feed")); const data = await readApiResponse(res); if(!data || !Array.isArray(data.packets) || !data.packets.length) return; updateTimeline(data.batch_summary || {}); data.packets.slice(0, 20).forEach(addPacket); } catch (e) { console.error(e); } }
+        function handleSelectedFile(file, autoRun=true){ if(!file) return; selectedFile = file; document.getElementById("dropzone").style.borderColor = "var(--success)"; document.getElementById("analyze-btn").disabled = false; resetUploadText(); feedback(`${file.name} selected. Preparing full-file analysis...`); if(autoRun) triggerAnalysis(); }
+        function handleFileUpload(event){ handleSelectedFile(event.target.files && event.target.files[0], true); }
+        async function downloadJSONReport() { try { const res = await fetch(apiUrl("/dataset-stats")); const data = await readApiResponse(res); const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2)); const downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); downloadAnchorNode.setAttribute("download", `SentinelNet_Report_${new Date().getTime()}.json`); document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove(); } catch (err) { feedback("Error downloading report", "error"); } }
+        async function triggerAnalysis(){ if(!selectedFile || isAnalyzing) return; isAnalyzing = true; const btn = document.getElementById("analyze-btn"); btn.innerText = "Analyzing..."; btn.disabled = true; feedback(`Analyzing ${selectedFile.name}...`); const form = new FormData(); form.append("file", selectedFile); try { const res = await fetch(apiUrl("/analyze"), { method:"POST", body:form }); const data = await readApiResponse(res); intrusionsBlocked = 0; document.getElementById("dash-blocked").innerText = "0"; clearTables(); renderStats(data); switchView("overview", document.querySelector(".nav-item")); feedback(`${data.source_name || selectedFile.name}: ${fmt(data.total)} rows analyzed in ${Number(data.analysis_seconds || 0).toFixed(3)}s using ${data.analysis_mode === "ground_truth" ? "labels" : "model prediction"}. Threats ${fmt(data.attacks)}, normal ${fmt(data.normal)}.`, "success"); } catch (e) { console.error(e); feedback(e.message || "Analysis failed for the uploaded file.", "error"); } finally { btn.innerText = "Analyze File"; btn.disabled = false; isAnalyzing = false; } }
+        async function requestAIAnalysis(event){ const btn = event.currentTarget; btn.innerText = "Querying Internal Database..."; btn.disabled = true; const output = document.getElementById("ai-output"); let threats = Array.from(sessionData.detectedThreats); if(!threats.length) threats = ["General Network Noise"]; try { const res = await fetch(apiUrl("/ai-analysis"), { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify({ threats }) }); const data = await readApiResponse(res); output.innerHTML = String(data.analysis || "").replace(/\n/g, "<br>"); } catch (e) { console.error(e); output.innerText = e.message || "Error utilizing external ML endpoint."; } finally { btn.innerText = "Request LLM Evaluation"; btn.disabled = false; } }
+        function triggerQuarantine(id, btn){ intrusionsBlocked += 1; document.getElementById("dash-blocked").innerText = fmt(intrusionsBlocked); const row = document.getElementById(id); if(row) row.style.opacity = ".3"; if(btn){ btn.innerText = "Blocked"; btn.style.borderColor = COLORS.text; btn.style.color = COLORS.text; btn.disabled = true; } }
+        function switchView(name, el){ document.querySelectorAll(".view").forEach((v) => v.classList.remove("active")); document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active")); const target = document.getElementById(`view-${name}`); if(target) target.classList.add("active"); if(el) el.classList.add("active"); const titles = { overview:"Analysis Dashboard", live:"Network Intelligence", setup:"Data Setup", ai:"Threat Mitigation" }; document.getElementById("page-title").innerText = titles[name] || "SentinelNet"; }
+        function toggleMonitor(){ isMonitoring = !isMonitoring; const btn = document.getElementById("btn-monitor"); btn.innerText = isMonitoring ? "Stop Monitor" : "Resume Monitor"; btn.style.background = isMonitoring ? "" : "rgba(59,130,246,.1)"; btn.style.borderColor = isMonitoring ? "" : "rgba(59,130,246,.3)"; btn.style.color = isMonitoring ? "" : "var(--accent)"; }
+        const dropzone = document.getElementById("dropzone"); ["dragenter","dragover","dragleave","drop"].forEach((evt) => { document.addEventListener(evt, (e) => e.preventDefault()); dropzone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); }); }); dropzone.addEventListener("dragover", () => dropzone.classList.add("drag")); dropzone.addEventListener("dragleave", () => dropzone.classList.remove("drag")); dropzone.addEventListener("drop", (e) => { dropzone.classList.remove("drag"); const dt = e.dataTransfer; if (dt && dt.files && dt.files.length) { handleSelectedFile(dt.files[0], true); } });
+        resetUploadText(); initial(); setInterval(poll, 750);
+    </script>
+</body>
+</html>
