@@ -4,13 +4,11 @@
 
  https://sentinelnet-nids.onrender.com
 
----
 
 ## Project Overview
 
 In this project, I developed **SentinelNet**, an AI-powered Network Intrusion Detection System (NIDS) designed to detect malicious network traffic and cyber-attacks. The system uses machine learning and anomaly detection techniques to classify network traffic as normal or suspicious, and supports real-time intrusion detection with alert generation and logging.
 
----
 
 ## Goal of the Project
 
@@ -20,7 +18,7 @@ In this project, I developed **SentinelNet**, an AI-powered Network Intrusion De
 * Reduce false alarms
 * Generate alerts for suspicious activity
 
----
+
 
 ## Understanding the Core Problem
 
@@ -30,7 +28,6 @@ In this project, I developed **SentinelNet**, an AI-powered Network Intrusion De
 * Machine Learning helps detect hidden patterns
 * Main task: **Traffic Classification (Normal vs Intrusion)**
 
----
 
 ## Key Outcomes
 
@@ -54,13 +51,11 @@ In this project, I developed **SentinelNet**, an AI-powered Network Intrusion De
 | Testing Data  | KDDTest.txt                  |
 | Classes       | Normal, DoS, Probe, R2L, U2R |
 
----
 
 ##  System Workflow
 
 Dataset → Preprocessing → Feature Engineering → Model Training → Evaluation → Anomaly Detection → Model Saving → Real-Time Prediction → Alert Generation → Logging
 
----
 
 ##  Module Implementation
 
@@ -111,7 +106,6 @@ Dataset → Preprocessing → Feature Engineering → Model Training → Evaluat
 * Prepared full pipeline
 * Created presentation
 
----
 
 ##  Model Performance
 
@@ -119,7 +113,6 @@ Dataset → Preprocessing → Feature Engineering → Model Training → Evaluat
 * Feature engineering improved accuracy
 * Anomaly detection enhanced unknown attack detection
 
----
 
 ## Conclusion
 
@@ -130,6 +123,6 @@ Dataset → Preprocessing → Feature Engineering → Model Training → Evaluat
 
 ---
 
-## 👩‍💻 Developed By
+##  Developed By
 
-** Konduru Vennela Raghava **
+**   Konduru Vennela Raghava   **
