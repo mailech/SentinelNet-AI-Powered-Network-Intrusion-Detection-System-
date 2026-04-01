@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SentinelNet — Live Threat Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="logo">
+      <div class="logo-shield">🛡</div>
+      <div><div class="logo-name">SentinelNet</div><div class="logo-tag">Intrusion Detection System · NSL-KDD</div></div>
+    </div>
+    <div class="header-right">
+      <div id="sessionClock">Session: 00:00</div>
+      <div class="live-badge"><div class="dot" id="liveDot"></div><span id="liveStatus">IDLE</span></div>
+    </div>
+  </header>
+
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('live',this)"><span class="tab-icon">📡</span>LIVE MONITOR</button>
+    <button class="tab-btn" onclick="switchTab('csv',this)"><span class="tab-icon">📂</span>CSV ANALYSIS</button>
+  </div>
+
+  <!-- TAB 1: LIVE MONITOR -->
+  <div class="tab-pane active" id="tab-live">
+    <div class="config-strip">
+      <div class="speed-wrap"><span>Speed</span>
+        <select id="speedSel">
+          <option value="2000">Slow (0.5/s)</option>
+          <option value="1000" selected>Normal (1/s)</option>
+          <option value="500">Fast (2/s)</option>
+          <option value="200">Turbo (5/s)</option>
+        </select>
+      </div>
+      <button class="btn btn-start" id="startBtn" onclick="startMonitor()">▶ START MONITOR</button>
+      <button class="btn btn-stop" id="stopBtn" onclick="stopMonitor()" disabled>■ STOP</button>
+      <button class="btn btn-clear" onclick="clearAll()">↺ RESET</button>
+      <div id="connBadge" class="idle">— IDLE</div>
+    </div>
+
+    <div class="metrics">
+      <div class="mc" id="mc-total"><div class="mc-label">Packets Analyzed</div><div class="mc-val blue" id="m-total">0</div><div class="mc-sub" id="m-rate">0 /sec</div><div class="mc-bar blue" id="mb-total" style="width:0%"></div></div>
+      <div class="mc" id="mc-normal"><div class="mc-label">Normal Traffic</div><div class="mc-val green" id="m-normal">0</div><div class="mc-sub" id="m-normal-pct">—</div><div class="mc-bar green" id="mb-normal" style="width:0%"></div></div>
+      <div class="mc" id="mc-intrusions"><div class="mc-label">Intrusions</div><div class="mc-val red" id="m-intrusions">0</div><div class="mc-sub" id="m-intrusions-pct">—</div><div class="mc-bar red" id="mb-intrusions" style="width:0%"></div></div>
+      <div class="mc" id="mc-dos"><div class="mc-label">DoS Attacks</div><div class="mc-val red" id="m-dos">0</div><div class="mc-sub">Denial of service</div><div class="mc-bar red" id="mb-dos" style="width:0%"></div></div>
+      <div class="mc" id="mc-probe"><div class="mc-label">Probes</div><div class="mc-val blue" id="m-probe">0</div><div class="mc-sub">Reconnaissance</div><div class="mc-bar blue" id="mb-probe" style="width:0%"></div></div>
+      <div class="mc" id="mc-u2r"><div class="mc-label">Critical (U2R)</div><div class="mc-val purple" id="m-u2r">0</div><div class="mc-sub">Privilege escalation</div><div class="mc-bar purple" id="mb-u2r" style="width:0%"></div></div>
+    </div>
+
+    <div class="main-grid">
+      <div class="panel">
+        <div class="panel-head"><span>// LIVE DETECTION FEED</span><span class="red" id="alertCount">0 ALERTS</span></div>
+        <div class="feed-wrap">
+          <div class="empty-state" id="emptyState"><div class="empty-icon">📡</div>Press START MONITOR to begin</div>
+          <table class="feed-table" id="feedTable" style="display:none">
+            <thead><tr><th>#</th><th>TIME</th><th>PROTOCOL</th><th>SRC BYTES</th><th>PREDICTION</th><th>CONFIDENCE</th><th>SEVERITY</th></tr></thead>
+            <tbody id="feedBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="side-panels">
+        <div class="panel">
+          <div class="panel-head"><span>// ATTACK DISTRIBUTION</span><span id="distTotal" class="accent">0 total</span></div>
+          <div style="padding:14px 18px">
+            <div class="bar-row"><div class="bar-lbl">normal</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--accent)" id="bar-normal"></div></div><div class="bar-cnt" id="bc-normal">0</div></div>
+            <div class="bar-row"><div class="bar-lbl">DoS</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--red)" id="bar-DoS"></div></div><div class="bar-cnt" id="bc-DoS">0</div></div>
+            <div class="bar-row"><div class="bar-lbl">Probe</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--cyan)" id="bar-Probe"></div></div><div class="bar-cnt" id="bc-Probe">0</div></div>
+            <div class="bar-row"><div class="bar-lbl">R2L</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--amber)" id="bar-R2L"></div></div><div class="bar-cnt" id="bc-R2L">0</div></div>
+            <div class="bar-row"><div class="bar-lbl">U2R</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--purple)" id="bar-U2R"></div></div><div class="bar-cnt" id="bc-U2R">0</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span>// THREAT TIMELINE</span><span class="accent" id="tlWindow">last 60s</span></div>
+          <div class="timeline-wrap"><canvas class="tl-canvas" id="tlCanvas"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span>// SYSTEM LOG</span></div>
+          <div class="term-wrap" id="termWrap"><div class="term-line"><span class="ts">[--:--:--]</span> <span class="info">SentinelNet initialized.</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-grid">
+      <div class="panel">
+        <div class="panel-head"><span>// ACTIVITY HEATMAP</span><span class="accent" style="font-size:9px">last 60 packets</span></div>
+        <div class="heatmap-grid" id="heatmap"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span>// CONFIDENCE DISTRIBUTION</span><span id="avgConf" class="accent">avg: —</span></div>
+        <div style="padding:14px 18px">
+          <div class="bar-row"><div class="bar-lbl">90-100%</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--accent)" id="conf-90"></div></div><div class="bar-cnt" id="cbc-90">0</div></div>
+          <div class="bar-row"><div class="bar-lbl">80-90%</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--cyan)" id="conf-80"></div></div><div class="bar-cnt" id="cbc-80">0</div></div>
+          <div class="bar-row"><div class="bar-lbl">70-80%</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--amber)" id="conf-70"></div></div><div class="bar-cnt" id="cbc-70">0</div></div>
+          <div class="bar-row"><div class="bar-lbl">&lt;70%</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--red)" id="conf-low"></div></div><div class="bar-cnt" id="cbc-low">0</div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span>// SESSION SUMMARY</span></div>
+        <div class="summary-grid">
+          <div class="sum-item"><div class="sum-label">Detection Rate</div><div class="sum-val" id="sum-rate" style="color:var(--accent)">—</div></div>
+          <div class="sum-item"><div class="sum-label">Avg Confidence</div><div class="sum-val" id="sum-conf" style="color:var(--cyan)">—</div></div>
+          <div class="sum-item"><div class="sum-label">Peak Threat</div><div class="sum-val" id="sum-peak" style="color:var(--red)">—</div></div>
+          <div class="sum-item"><div class="sum-label">Model Source</div><div class="sum-val" id="sum-model" style="color:var(--amber);font-size:13px">LOCAL</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: CSV ANALYSIS -->
+  <div class="tab-pane" id="tab-csv">
+    <div id="csvUploadSection">
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="csvFileInput" accept=".csv" onchange="handleFileSelect(event)"/>
+        <span class="upload-icon">📁</span>
+        <div class="upload-title">Drop your NSL-KDD CSV here</div>
+        <div class="upload-sub">Auto-detects headers · Batch processed · Instant report</div>
+        <div class="upload-hint">ACCEPTED: .csv · NSL-KDD format · 42 or 43 columns · Any size</div>
+      </div>
+      <div style="margin-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        <div class="panel"><div class="panel-head"><span>// SUPPORTED FORMATS</span></div><div style="padding:16px;font-family:var(--mono);font-size:10px;color:var(--muted2);line-height:2.4">✓ NSL-KDD <span style="color:var(--accent)">with headers</span><br>✓ NSL-KDD <span style="color:var(--accent)">without headers</span><br>✓ KDDTrain+.txt / KDDTest+.txt<br>✓ 42 or 43 columns</div></div>
+        <div class="panel"><div class="panel-head"><span>// BATCH PROCESSING</span></div><div style="padding:16px;font-family:var(--mono);font-size:10px;color:var(--muted2);line-height:2.4">✓ <span style="color:var(--cyan)">100 rows/batch</span> — fast<br>✓ Live feed while processing<br>✓ Auto-downloads CSV on finish<br>✓ Full report: 6 charts + risk gauge</div></div>
+        <div class="panel"><div class="panel-head"><span>// THREAT CLASSES</span></div><div style="padding:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="cls-badge cls-normal">normal</span><span style="font-family:var(--mono);font-size:10px;color:var(--muted2)">Clean traffic</span></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="cls-badge cls-DoS">DoS</span><span style="font-family:var(--mono);font-size:10px;color:var(--muted2)">Denial of service</span></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="cls-badge cls-Probe">Probe</span><span style="font-family:var(--mono);font-size:10px;color:var(--muted2)">Reconnaissance</span></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="cls-badge cls-R2L">R2L</span><span style="font-family:var(--mono);font-size:10px;color:var(--muted2)">Remote to local</span></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="cls-badge cls-U2R">U2R</span><span style="font-family:var(--mono);font-size:10px;color:var(--muted2)">Privilege escalation</span></div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="processing-area" id="csvProcessingArea">
+      <div id="formatBanner" class="format-banner ok" style="display:none"></div>
+      <div class="file-card">
+        <div class="file-icon">📊</div>
+        <div class="file-details"><div class="file-name" id="csvFileName">—</div><div class="file-meta" id="csvFileMeta">—</div></div>
+        <div class="file-actions">
+          <button class="btn btn-start" id="csvStartBtn" onclick="startCsvAnalysis()">▶ ANALYZE</button>
+          <button class="btn btn-stop" id="csvStopBtn" onclick="stopCsvAnalysis()" disabled>■ PAUSE</button>
+          <button class="btn btn-clear" onclick="resetCsvTab()">✕ CLEAR</button>
+        </div>
+      </div>
+
+      <div class="progress-block" id="csvProgressBlock" style="display:none">
+        <div class="scan-line"></div>
+        <div class="progress-header"><span class="progress-title">// BATCH PROCESSING</span><span class="progress-stats" id="csvProgressStats">0 / 0 rows</span></div>
+        <div class="progress-track"><div class="progress-fill" id="csvProgressFill"></div></div>
+        <div class="progress-row">
+          <span id="csvProgressPct">0%</span>
+          <span id="csvProgressEta">ETA: —</span>
+          <span id="csvThreatRate" style="color:var(--red)">Threats: 0</span>
+          <span id="csvSpeedStat" style="color:var(--cyan)">— rows/s</span>
+        </div>
+        <div class="current-row-display" id="csvCurrentRow">Initializing…</div>
+        <div class="batch-status" id="batchStatus"></div>
+      </div>
+
+      <div class="csv-results-grid" id="csvLiveGrid" style="display:none">
+        <div class="panel">
+          <div class="panel-head"><span>// ROW ANALYSIS FEED</span><span id="csvAlertCount" class="red">0 THREATS</span></div>
+          <div class="csv-feed-wrap"><table class="csv-feed-table">
+            <thead><tr><th>ROW</th><th>PROTO</th><th>SERVICE</th><th>SRC BYTES</th><th>CLASS</th><th>CONFIDENCE</th><th>SEVERITY</th></tr></thead>
+            <tbody id="csvFeedBody"></tbody>
+          </table></div>
+        </div>
+        <div class="mini-stat-panel">
+          <div class="mini-card">
+            <div class="mini-card-title">Distribution</div>
+            <div class="bar-row"><div class="bar-lbl">normal</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--accent)" id="csvbar-normal"></div></div><div class="bar-cnt" id="csvbc-normal">0</div></div>
+            <div class="bar-row"><div class="bar-lbl">DoS</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--red)" id="csvbar-DoS"></div></div><div class="bar-cnt" id="csvbc-DoS">0</div></div>
+            <div class="bar-row"><div class="bar-lbl">Probe</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--cyan)" id="csvbar-Probe"></div></div><div class="bar-cnt" id="csvbc-Probe">0</div></div>
+            <div class="bar-row"><div class="bar-lbl">R2L</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--amber)" id="csvbar-R2L"></div></div><div class="bar-cnt" id="csvbc-R2L">0</div></div>
+            <div class="bar-row"><div class="bar-lbl">U2R</div><div class="bar-track"><div class="bar-fill" style="width:0%;background:var(--purple)" id="csvbar-U2R"></div></div><div class="bar-cnt" id="csvbc-U2R">0</div></div>
+          </div>
+          <div class="mini-card"><div class="mini-card-title">Avg Confidence</div><div style="font-family:var(--mono);font-size:30px;font-weight:700;color:var(--cyan)" id="csvAvgConf">—</div><div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px">across all predictions</div></div>
+          <div class="mini-card">
+            <div class="mini-card-title">Severity Breakdown</div>
+            <div class="sev-bar-row"><div class="sev-bar-lbl">Critical</div><div class="sev-bar-track"><div class="sev-bar-fill" style="width:0%;background:var(--red)" id="sevbar-Critical"></div></div><div class="sev-bar-cnt" id="sevbc-Critical" style="color:var(--red)">0</div></div>
+            <div class="sev-bar-row"><div class="sev-bar-lbl">High</div><div class="sev-bar-track"><div class="sev-bar-fill" style="width:0%;background:var(--amber)" id="sevbar-High"></div></div><div class="sev-bar-cnt" id="sevbc-High" style="color:var(--amber)">0</div></div>
+            <div class="sev-bar-row"><div class="sev-bar-lbl">Medium</div><div class="sev-bar-track"><div class="sev-bar-fill" style="width:0%;background:var(--cyan)" id="sevbar-Medium"></div></div><div class="sev-bar-cnt" id="sevbc-Medium" style="color:var(--cyan)">0</div></div>
+            <div class="sev-bar-row"><div class="sev-bar-lbl">None</div><div class="sev-bar-track"><div class="sev-bar-fill" style="width:0%;background:var(--accent)" id="sevbar-None"></div></div><div class="sev-bar-cnt" id="sevbc-None" style="color:var(--accent)">0</div></div>
+          </div>
+          <div class="mini-card"><div class="mini-card-title">Processing Speed</div><div style="font-family:var(--mono);font-size:24px;font-weight:700;color:var(--accent)" id="csvProcRate">—</div><div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px">rows / second</div></div>
+        </div>
+      </div>
+
+      <!-- REPORT -->
+      <div class="report-section" id="reportSection">
+        <div class="completion-banner">
+          <div style="font-size:32px">✅</div>
+          <div><div class="banner-title">Analysis Complete — Threat Report Ready</div><div class="banner-sub" id="bannerSub">—</div></div>
+        </div>
+        <div class="export-bar">
+          <button class="btn-export btn-export-csv" onclick="exportAnnotatedCSV()">⬇ ANNOTATED CSV</button>
+          <button class="btn-export btn-export-pdf" onclick="exportPDFReport()">⬇ PDF REPORT</button>
+          <button class="btn-export btn-export-json" onclick="exportJSON()">⬇ JSON EXPORT</button>
+          <button class="btn-export btn-new-scan" onclick="resetCsvTab()">⟳ NEW SCAN</button>
+        </div>
+        <div class="report-header">
+          <div class="report-title">🛡 SentinelNet Threat Analysis Report</div>
+          <div class="report-subtitle" id="reportSubtitle">—</div>
+          <div class="report-meta">
+            <div class="report-meta-item">File: <span id="rmFile">—</span></div>
+            <div class="report-meta-item">Rows: <span id="rmRows">—</span></div>
+            <div class="report-meta-item">Date: <span id="rmDate">—</span></div>
+            <div class="report-meta-item">Model: <span id="rmModel">—</span></div>
+            <div class="report-meta-item">Duration: <span id="rmDuration">—</span></div>
+            <div class="report-meta-item">Format: <span id="rmFormat">—</span></div>
+          </div>
+        </div>
+        <div class="report-grid">
+          <div class="report-stat cyan"><div class="report-stat-val" id="rs-total" style="color:var(--cyan)">—</div><div class="report-stat-lbl">Total Rows</div></div>
+          <div class="report-stat red"><div class="report-stat-val" id="rs-threats" style="color:var(--red)">—</div><div class="report-stat-lbl">Threats Found</div></div>
+          <div class="report-stat amber"><div class="report-stat-val" id="rs-rate" style="color:var(--amber)">—</div><div class="report-stat-lbl">Threat Rate</div></div>
+          <div class="report-stat green"><div class="report-stat-val" id="rs-conf" style="color:var(--accent)">—</div><div class="report-stat-lbl">Avg Confidence</div></div>
+          <div class="report-stat purple"><div class="report-stat-val" id="rs-risk" style="color:var(--purple)">—</div><div class="report-stat-lbl">Risk Score</div></div>
+        </div>
+        <div class="report-charts">
+          <div class="panel"><div class="panel-head"><span>// CLASS DISTRIBUTION</span></div><div class="chart-canvas-wrap"><canvas class="chart-canvas" id="reportBarCanvas"></canvas></div></div>
+          <div class="panel"><div class="panel-head"><span>// CONFIDENCE WAVEFORM</span><span class="cyan">over dataset</span></div><div class="chart-canvas-wrap"><canvas class="chart-canvas" id="reportConfCanvas"></canvas></div></div>
+          <div class="panel"><div class="panel-head"><span>// THREAT INTENSITY</span><span class="red">rolling density</span></div><div class="chart-canvas-wrap"><canvas class="chart-canvas" id="reportIntensityCanvas"></canvas></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:22px">
+          <div class="panel"><div class="panel-head"><span>// PROTOCOL BREAKDOWN</span></div><div class="proto-bars" id="protoBreakdown"></div></div>
+          <div class="panel"><div class="panel-head"><span>// TOP TARGETED SERVICES</span></div><div class="services-list" id="servicesList"></div></div>
+          <div class="panel">
+            <div class="panel-head"><span>// RISK GAUGE</span></div>
+            <div class="risk-gauge-wrap"><canvas class="risk-gauge-canvas" id="riskGaugeCanvas"></canvas><div class="risk-label" id="riskLabel">—</div></div>
+            <div style="padding:0 18px 14px">
+              <div class="sev-bar-row"><div class="sev-bar-lbl">Critical</div><div class="sev-bar-track"><div class="sev-bar-fill" style="width:0%;background:var(--red)" id="rsevbar-Critical"></div></div><div class="sev-bar-cnt" id="rsevbc-Critical" style="color:var(--red)">0</div></div>
+              <div class="sev-bar-row"><div class="sev-bar-lbl">High</div><div class="sev-bar-track"><div class="sev-bar-fill" style="width:0%;background:var(--amber)" id="rsevbar-High"></div></div><div class="sev-bar-cnt" id="rsevbc-High" style="color:var(--amber)">0</div></div>
+              <div class="sev-bar-row"><div class="sev-bar-lbl">Medium</div><div class="sev-bar-track"><div class="sev-bar-fill" style="width:0%;background:var(--cyan)" id="rsevbar-Medium"></div></div><div class="sev-bar-cnt" id="rsevbc-Medium" style="color:var(--cyan)">0</div></div>
+              <div class="sev-bar-row"><div class="sev-bar-lbl">None</div><div class="sev-bar-track"><div class="sev-bar-fill" style="width:0%;background:var(--accent)" id="rsevbar-None"></div></div><div class="sev-bar-cnt" id="rsevbc-None" style="color:var(--accent)">0</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="margin-bottom:22px">
+          <div class="panel-head"><span>// ATTACK PATTERN CLUSTERS</span><span class="accent" id="clusterCount">0 clusters</span></div>
+          <div class="cluster-grid" id="clusterGrid"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span>// COMPLETE ANALYSIS</span><span id="reportRowCount" class="accent">0 rows</span></div>
+          <div style="overflow-x:auto">
+            <table class="threat-table">
+              <thead><tr><th>ROW</th><th>PROTOCOL</th><th>SERVICE</th><th>SRC BYTES</th><th>DST BYTES</th><th>CLASS</th><th>CONFIDENCE</th><th>SEVERITY</th><th>TRUE LABEL</th></tr></thead>
+              <tbody id="reportTableBody"></tbody>
+            </table>
+          </div>
+          <div class="pager">
+            <button class="pager-btn" id="pgPrev" onclick="changePage(-1)" disabled>◀ PREV</button>
+            <span id="pgInfo" style="flex:1;text-align:center">Page 1 of 1</span>
+            <button class="pager-btn" id="pgNext" onclick="changePage(1)" disabled>NEXT ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
