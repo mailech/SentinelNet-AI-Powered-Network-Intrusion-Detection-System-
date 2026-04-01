@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="hero-strip">
+    <div>
+        <h1 class="dashboard-title">Mobile Network Live Monitor</h1>
+        <p class="dashboard-subtitle">
+            Real-time monitoring of mobile-generated network traffic captured through the laptop interface.
+        </p>
+    </div>
+    <div class="hero-actions">
+        <span class="panel-tag" id="liveModeTag">Realtime</span>
+        <button class="btn attack-btn" id="toggleAttackBtn" type="button">Simulate Attack: OFF</button>
+    </div>
+</div>
+
+<div class="stats">
+    <div class="card stat-card primary-glow">
+        <p class="stat-label">Live Packets</p>
+        <h2 id="metricLogs">0</h2>
+        <span class="stat-foot">Current capture window</span>
+    </div>
+
+    <div class="card stat-card danger blink-card" id="threatCard">
+        <p class="stat-label">Threats</p>
+        <h2 id="metricThreats">0</h2>
+        <span class="stat-foot">Suspicious detections</span>
+    </div>
+
+    <div class="card stat-card safe">
+        <p class="stat-label">Safe</p>
+        <h2 id="metricSafe">0</h2>
+        <span class="stat-foot">Normal detections</span>
+    </div>
+
+    <div class="card stat-card">
+        <p class="stat-label">Top Attack</p>
+        <h2 id="metricTopAttack">No data</h2>
+        <span class="stat-foot">Most recent class</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="panel-head">
+        <h3>Live Status</h3>
+        <span class="panel-tag">Realtime API</span>
+    </div>
+    <p>Last refresh: <strong id="liveTime">--:--:--</strong></p>
+    <p id="liveStatus" class="table-subtitle">Waiting for live data...</p>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card chart-card">
+        <div class="panel-head">
+            <h3>Live Traffic Trend</h3>
+            <span class="panel-tag">Packets & Threats</span>
+        </div>
+        <canvas id="trafficTrendChart"></canvas>
+    </div>
+
+    <div class="card chart-card">
+        <div class="panel-head">
+            <h3>Threat vs Safe Trend</h3>
+            <span class="panel-tag">Window Summary</span>
+        </div>
+        <canvas id="liveThreatSafeChart"></canvas>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card map-card">
+        <div class="panel-head">
+            <h3>Mobile Threat Map</h3>
+            <span class="panel-tag">Live Zones</span>
+        </div>
+
+        <div class="threat-map world-map live-map" id="liveMap">
+            <div class="map-label north">North Gateway</div>
+            <div class="map-label east">East Node</div>
+            <div class="map-label south">South Cluster</div>
+            <div class="map-label west">West Access</div>
+            <div class="map-label center">Core Network</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="panel-head">
+            <h3>Live Alerts</h3>
+            <span class="panel-tag">Mobile Feed</span>
+        </div>
+        <div class="threat-feed" id="liveAlerts"></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="panel-head">
+        <h3>Live Prediction Rows</h3>
+        <span class="panel-tag">Current Window</span>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Duration</th>
+                    <th>Src Bytes</th>
+                    <th>Dst Bytes</th>
+                    <th>Count</th>
+                    <th>Srv Count</th>
+                    <th>Predicted Class</th>
+                    <th>Confidence</th>
+                    <th>Threat Status</th>
+                </tr>
+            </thead>
+            <tbody id="liveTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+function escapeHtml(text) {
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function baseMapLabels() {
+    return `
+        <div class="map-label north">North Gateway</div>
+        <div class="map-label east">East Node</div>
+        <div class="map-label south">South Cluster</div>
+        <div class="map-label west">West Access</div>
+        <div class="map-label center">Core Network</div>
+    `;
+}
+
+const trendLabels = [];
+const packetSeries = [];
+const threatSeries = [];
+const safeSeries = [];
+
+const trafficTrendChart = new Chart(document.getElementById("trafficTrendChart"), {
+    type: "line",
+    data: {
+        labels: trendLabels,
+        datasets: [
+            {
+                label: "Packets",
+                data: packetSeries,
+                tension: 0.35,
+                fill: false,
+                borderColor: "#2fb5ff",
+                backgroundColor: "#2fb5ff"
+            },
+            {
+                label: "Threats",
+                data: threatSeries,
+                tension: 0.35,
+                fill: false,
+                borderColor: "#ff5b7d",
+                backgroundColor: "#ff5b7d"
+            }
+        ]
+    },
+    options: {
+        maintainAspectRatio: false,
+        animation: { duration: 700 },
+        plugins: {
+            legend: { labels: { color: "white" } }
+        },
+        scales: {
+            x: {
+                ticks: { color: "white" },
+                grid: { color: "rgba(255,255,255,0.08)" }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: { color: "white" },
+                grid: { color: "rgba(255,255,255,0.08)" }
+            }
+        }
+    }
+});
+
+const liveThreatSafeChart = new Chart(document.getElementById("liveThreatSafeChart"), {
+    type: "bar",
+    data: {
+        labels: ["Threats", "Safe"],
+        datasets: [{
+            label: "Current Window",
+            data: [0, 0],
+            borderRadius: 8,
+            backgroundColor: ["#ff5b7d", "#31d67b"]
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        animation: { duration: 700 },
+        plugins: {
+            legend: { labels: { color: "white" } }
+        },
+        scales: {
+            x: {
+                ticks: { color: "white" },
+                grid: { color: "rgba(255,255,255,0.08)" }
+            },
+            y: {
+                beginAtZero: true,
+                ticks: { color: "white" },
+                grid: { color: "rgba(255,255,255,0.08)" }
+            }
+        }
+    }
+});
+
+function pushTrendPoint(label, packets, threats, safe) {
+    trendLabels.push(label);
+    packetSeries.push(packets);
+    threatSeries.push(threats);
+    safeSeries.push(safe);
+
+    if (trendLabels.length > 10) {
+        trendLabels.shift();
+        packetSeries.shift();
+        threatSeries.shift();
+        safeSeries.shift();
+    }
+
+    trafficTrendChart.update();
+    liveThreatSafeChart.data.datasets[0].data = [threats, safe];
+    liveThreatSafeChart.update();
+}
+
+async function loadAttackStatus() {
+    try {
+        const res = await fetch("/api/attack-status");
+        const data = await res.json();
+        const btn = document.getElementById("toggleAttackBtn");
+
+        if (data.attack_mode) {
+            btn.textContent = "Simulate Attack: ON";
+            btn.classList.add("attack-on");
+        } else {
+            btn.textContent = "Simulate Attack: OFF";
+            btn.classList.remove("attack-on");
+        }
+    } catch (err) {
+        console.error("Attack status error:", err);
+    }
+}
+
+document.getElementById("toggleAttackBtn").addEventListener("click", async function () {
+    try {
+        const res = await fetch("/api/toggle-attack", {
+            method: "POST"
+        });
+        const data = await res.json();
+        const btn = document.getElementById("toggleAttackBtn");
+
+        if (data.attack_mode) {
+            btn.textContent = "Simulate Attack: ON";
+            btn.classList.add("attack-on");
+        } else {
+            btn.textContent = "Simulate Attack: OFF";
+            btn.classList.remove("attack-on");
+        }
+
+        loadMobileLive();
+    } catch (err) {
+        console.error("Toggle attack failed:", err);
+    }
+});
+
+async function loadMobileLive() {
+    const statusBox = document.getElementById("liveStatus");
+    const threatCard = document.getElementById("threatCard");
+
+    try {
+        const res = await fetch("/api/mobile-live");
+        if (!res.ok) {
+            throw new Error("HTTP " + res.status);
+        }
+
+        const data = await res.json();
+
+        document.getElementById("liveModeTag").textContent = data.mode || "unknown";
+        document.getElementById("liveTime").textContent = data.time || "--:--:--";
+        document.getElementById("metricLogs").textContent = data.total_logs || 0;
+        document.getElementById("metricThreats").textContent = data.total_threats || 0;
+        document.getElementById("metricSafe").textContent = data.total_safe || 0;
+        document.getElementById("metricTopAttack").textContent = data.top_attack || "No data";
+        document.getElementById("liveStatus").textContent = data.status_message || "Live running";
+
+        if ((data.total_threats || 0) > 0) {
+            threatCard.classList.add("blink-card");
+        } else {
+            threatCard.classList.remove("blink-card");
+        }
+
+        pushTrendPoint(
+            data.time || "--:--:--",
+            data.total_logs || 0,
+            data.total_threats || 0,
+            data.total_safe || 0
+        );
+
+        const alertsBox = document.getElementById("liveAlerts");
+        const mapBox = document.getElementById("liveMap");
+        const tableBody = document.getElementById("liveTableBody");
+
+        alertsBox.innerHTML = "";
+        mapBox.innerHTML = baseMapLabels();
+        tableBody.innerHTML = "";
+
+        const alerts = data.alerts || [];
+        const rows = data.rows || [];
+
+        if (alerts.length === 0) {
+            alertsBox.innerHTML = `
+                <div class="feed-item low">
+                    <div class="feed-dot low"></div>
+                    <div class="feed-content">
+                        <h4>No Alerts</h4>
+                        <p>No threat activity detected in the current window.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        alerts.forEach(alert => {
+            alertsBox.innerHTML += `
+                <div class="feed-item ${escapeHtml(alert.severity)} ${(alert.severity === 'high') ? 'blink-alert' : ''}">
+                    <div class="feed-dot ${escapeHtml(alert.severity)}"></div>
+                    <div class="feed-content">
+                        <h4>${escapeHtml(alert.title)}</h4>
+                        <p>${escapeHtml(alert.message)}</p>
+                    </div>
+                </div>
+            `;
+
+            mapBox.innerHTML += `
+                <div class="threat-node ${escapeHtml(alert.severity)}"
+                     style="left:${alert.x}%; top:${alert.y}%"
+                     title="${escapeHtml(alert.title)} - ${escapeHtml(alert.message)}">
+                    <span class="pulse"></span>
+                    <span class="dot"></span>
+                </div>
+            `;
+        });
+
+        rows.forEach(row => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td>${escapeHtml(row.duration ?? "")}</td>
+                    <td>${escapeHtml(row.src_bytes ?? "")}</td>
+                    <td>${escapeHtml(row.dst_bytes ?? "")}</td>
+                    <td>${escapeHtml(row.count ?? "")}</td>
+                    <td>${escapeHtml(row.srv_count ?? "")}</td>
+                    <td>${escapeHtml(row.predicted_class ?? "")}</td>
+                    <td>${escapeHtml(row.confidence ?? "")}</td>
+                    <td>${escapeHtml(row.threat_status ?? "")}</td>
+                </tr>
+            `;
+        });
+
+        statusBox.textContent = data.status_message || "Live monitoring connected successfully.";
+
+    } catch (err) {
+        console.error("Mobile live fetch failed:", err);
+        statusBox.textContent = "Mobile live API error: " + err.message;
+    }
+}
+
+loadAttackStatus();
+loadMobileLive();
+setInterval(loadMobileLive, 5000);
+setInterval(loadAttackStatus, 5000);
+</script>
+{% endblock %}

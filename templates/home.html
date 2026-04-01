@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card hero">
+    <h1>AI-Based Network Intrusion Detection System</h1>
+    <p>
+        Monitor suspicious traffic, detect attacks using machine learning,
+        visualize cyber threats, and simulate real-time intrusion detection
+        through an interactive security dashboard.
+    </p>
+    <a class="btn" href="{{ url_for('upload') }}">Start Analysis</a>
+</div>
+
+<div class="stats">
+    <div class="card">
+        <h3>Detection Engine</h3>
+        <p>Random Forest model with preprocessing pipeline and live inference support.</p>
+    </div>
+    <div class="card danger">
+        <h3>Threat Intelligence</h3>
+        <p>Detects anomalies and attack classes such as Neptune, Satan, Probe, and more.</p>
+    </div>
+    <div class="card safe">
+        <h3>Real-Time Simulation</h3>
+        <p>Chunk-based live monitoring view powered by the trained model predictions.</p>
+    </div>
+    <div class="card">
+        <h3>Outputs</h3>
+        <p>Dashboard, cyber threat map, alerts, CSV export, and PDF report generation.</p>
+    </div>
+</div>
+
+<div class="grid2">
+    <div class="card">
+        <h3>System Workflow</h3>
+        <p>Upload dataset → preprocess → predict → generate alerts → visualize on dashboard and live monitor.</p>
+    </div>
+    <div class="card">
+        <h3>Technology Stack</h3>
+        <p>Python, Flask, SQLite, Scikit-learn, Pandas, Chart.js</p>
+    </div>
+</div>
+{% endblock %}

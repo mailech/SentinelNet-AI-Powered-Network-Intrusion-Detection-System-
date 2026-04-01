@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="hero-strip">
+    <div>
+        <h1 class="dashboard-title">AI Sentinel Threat Intelligence Dashboard</h1>
+        <p class="dashboard-subtitle">
+            Real-time cyber analytics, ML-based threat detection, attack distribution, grouped alerts, and results monitoring.
+        </p>
+    </div>
+    <div class="hero-actions">
+        <a class="btn" href="{{ url_for('download_csv') }}">Download CSV</a>
+        <a class="btn" href="{{ url_for('download_pdf') }}">Download PDF</a>
+    </div>
+</div>
+
+<div class="stats">
+    <div class="card stat-card primary-glow">
+        <p class="stat-label">Total Logs</p>
+        <h2>{{ total_logs or 0 }}</h2>
+        <span class="stat-foot">Processed records</span>
+    </div>
+
+    <div class="card stat-card danger">
+        <p class="stat-label">Threats</p>
+        <h2>{{ total_threats or 0 }}</h2>
+        <span class="stat-foot">Detected malicious activity</span>
+    </div>
+
+    <div class="card stat-card safe">
+        <p class="stat-label">Safe</p>
+        <h2>{{ total_safe or 0 }}</h2>
+        <span class="stat-foot">Normal traffic</span>
+    </div>
+
+    <div class="card stat-card">
+        <p class="stat-label">Avg Confidence</p>
+        <h2>{{ avg_confidence or 0 }}%</h2>
+        <span class="stat-foot">Model certainty</span>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card overview-panel">
+        <div class="panel-head">
+            <h3>Threat Overview</h3>
+            <span class="panel-tag">ML Summary</span>
+        </div>
+
+        <div class="overview-list">
+            <div class="overview-item">
+                <span>Threat Percentage</span>
+                <strong>{{ threat_percentage or 0 }}%</strong>
+            </div>
+            <div class="overview-item">
+                <span>Safe Percentage</span>
+                <strong>{{ safe_percentage or 0 }}%</strong>
+            </div>
+            <div class="overview-item">
+                <span>Top Attack</span>
+                <strong>{{ top_attack or "No data" }}</strong>
+            </div>
+            <div class="overview-item">
+                <span>Alert Groups</span>
+                <strong>{{ alerts|length }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="card feed-panel">
+        <div class="panel-head">
+            <h3>Threat Feed</h3>
+            <span class="panel-tag">Grouped Alerts</span>
+        </div>
+
+        <div class="threat-feed">
+            {% for alert in alerts %}
+            <div class="feed-item {{ alert.severity }}">
+                <div class="feed-dot {{ alert.severity }}"></div>
+                <div class="feed-content">
+                    <h4>{{ alert.title }}</h4>
+                    <p>{{ alert.message }}</p>
+                </div>
+            </div>
+            {% else %}
+            <p>No active alerts available.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card chart-card large-chart">
+        <div class="panel-head">
+            <h3>Attack Distribution</h3>
+            <span class="panel-tag">Frequency</span>
+        </div>
+        <canvas id="barChart"></canvas>
+    </div>
+
+    <div class="card chart-card">
+        <div class="panel-head">
+            <h3>Attack Share</h3>
+            <span class="panel-tag">Ratio</span>
+        </div>
+        <canvas id="pieChart"></canvas>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card chart-card">
+        <div class="panel-head">
+            <h3>Threat vs Safe</h3>
+            <span class="panel-tag">Comparison</span>
+        </div>
+        <canvas id="threatSafeChart"></canvas>
+    </div>
+
+    <div class="card">
+        <div class="panel-head">
+            <h3>Threat Score Cards</h3>
+            <span class="panel-tag">Risk Levels</span>
+        </div>
+
+        <div class="cards-grid">
+            {% for card in cards %}
+            <div class="score-card {{ card.heat_class }}">
+                <h4>{{ card.name }}</h4>
+                <p><strong>Attack:</strong> {{ card.attack_type }}</p>
+                <p><strong>Confidence:</strong> {{ card.score }}%</p>
+                <span>{{ card.badge }}</span>
+            </div>
+            {% else %}
+            <p>No suspicious records found.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-head">
+        <div>
+            <h3>Prediction Results</h3>
+            <p class="table-subtitle">Top model outputs with confidence and threat status</p>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        {% if rows %}
+        <table>
+            <thead>
+                <tr>
+                    {% for key in rows[0].keys() if key != "heat_class" %}
+                    <th>{{ key.replace("_", " ").title() }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr class="{{ row.heat_class }}">
+                    {% for key, value in row.items() if key != "heat_class" %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No results available.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const labels = {{ chart_labels | tojson }};
+const values = {{ chart_values | tojson }};
+
+new Chart(document.getElementById("barChart"), {
+    type: "bar",
+    data: {
+        labels: labels,
+        datasets: [{
+            label: "Attack Count",
+            data: values,
+            borderRadius: 8
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { labels: { color: "white" } }
+        },
+        scales: {
+            x: { ticks: { color: "white" }, grid: { color: "rgba(255,255,255,0.08)" } },
+            y: { beginAtZero: true, ticks: { color: "white" }, grid: { color: "rgba(255,255,255,0.08)" } }
+        }
+    }
+});
+
+new Chart(document.getElementById("pieChart"), {
+    type: "doughnut",
+    data: {
+        labels: labels,
+        datasets: [{
+            data: values,
+            borderWidth: 1
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: "bottom", labels: { color: "white" } }
+        }
+    }
+});
+
+new Chart(document.getElementById("threatSafeChart"), {
+    type: "doughnut",
+    data: {
+        labels: ["Threat", "Safe"],
+        datasets: [{
+            data: [{{ total_threats or 0 }}, {{ total_safe or 0 }}],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: "bottom", labels: { color: "white" } }
+        }
+    }
+});
+</script>
+
+{% endblock %}

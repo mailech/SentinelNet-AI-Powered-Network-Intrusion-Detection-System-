@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card hero">
+    <h1>Upload Dataset for Threat Analysis</h1>
+    <p>
+        Upload your processed network intrusion dataset to run the trained model,
+        generate threat predictions, build alerts, and feed the live monitoring system.
+    </p>
+</div>
+
+<div class="grid2">
+    <div class="card">
+        <h3>Dataset Upload</h3>
+        <p style="margin-bottom: 16px;">
+            Use your processed CSV file for best results, such as
+            <strong>test_processed_advanced.csv</strong>.
+        </p>
+
+        <form method="POST" enctype="multipart/form-data" class="form">
+            <input type="file" name="dataset" accept=".csv" required>
+            <button type="submit" class="btn">Analyze Dataset</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Upload Instructions</h3>
+        <p>1. Upload a processed CSV file.</p>
+        <p>2. The model will generate predictions and confidence scores.</p>
+        <p>3. Dashboard, alerts, and live monitor will update from this uploaded file.</p>
+        <p>4. The same file is also used for real-time chunk-based simulation in Live Monitor.</p>
+    </div>
+</div>
+
+<div class="stats">
+    <div class="card">
+        <h3>Supported Format</h3>
+        <p>Processed CSV with columns aligned to training features.</p>
+    </div>
+    <div class="card danger">
+        <h3>Threat Detection</h3>
+        <p>Predicts attack classes and marks malicious traffic as threats.</p>
+    </div>
+    <div class="card safe">
+        <h3>Live Monitoring</h3>
+        <p>Uploaded file is streamed in chunks for simulated real-time predictions.</p>
+    </div>
+    <div class="card">
+        <h3>Output Files</h3>
+        <p>Prediction CSV and PDF report are generated automatically.</p>
+    </div>
+</div>
+
+{% endblock %}

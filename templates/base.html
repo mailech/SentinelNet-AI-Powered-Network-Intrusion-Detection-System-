@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Sentinel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+{% if session.get('user_email') %}
+    <div class="topbar">
+        <div class="brand">AI Sentinel</div>
+
+        <div class="nav-links">
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('upload') }}">Upload</a>
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('alerts') }}">Alerts</a>
+            <a href="{{ url_for('live') }}">Live Monitor</a>
+            <a href="{{ url_for('download_pdf') }}">Download PDF</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+
+        <div class="user-mini">
+            <strong>{{ session.get('user_name') }}</strong><br>
+            <span>{{ session.get('user_email') }}</span>
+        </div>
+    </div>
+
+    <div class="page-content">
+        {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+                <div class="flash">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+{% else %}
+    <div class="login-page-bg">
+        <div class="login-wrap">
+            <div class="auth-panel">
+                <div class="auth-card-wrap">
+
+                    {% with messages = get_flashed_messages() %}
+                        {% for message in messages %}
+                            <div class="flash auth-flash">{{ message }}</div>
+                        {% endfor %}
+                    {% endwith %}
+
+                    {% block auth_content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+</body>
+</html>

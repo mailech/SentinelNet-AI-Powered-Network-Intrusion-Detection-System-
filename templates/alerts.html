@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="hero-strip">
+    <div>
+        <h1 class="dashboard-title">Threat Alerts & Cyber Map</h1>
+        <p class="dashboard-subtitle">
+            Grouped intrusion alerts visualized across monitored cyber zones for quick threat awareness.
+        </p>
+    </div>
+    <div class="hero-actions">
+        <a class="btn" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card map-card">
+        <div class="panel-head">
+            <h3>Cyber Threat Map</h3>
+            <span class="panel-tag">Attack Zones</span>
+        </div>
+
+        <div class="threat-map world-map">
+            <div class="map-label north">North Gateway</div>
+            <div class="map-label east">East Node</div>
+            <div class="map-label south">South Cluster</div>
+            <div class="map-label west">West Access</div>
+            <div class="map-label center">Core Network</div>
+
+            {% for alert in alerts %}
+            <div class="threat-node {{ alert.severity }}"
+                 style="left: {{ alert.x }}%; top: {{ alert.y }}%;"
+                 title="{{ alert.title }} - {{ alert.message }}">
+                <span class="pulse"></span>
+                <span class="dot"></span>
+                <span class="threat-text">{{ alert.place }}</span>
+            </div>
+            {% else %}
+            <div class="map-center">No Active Threats</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="panel-head">
+            <h3>Alert Summary</h3>
+            <span class="panel-tag">Grouped Feed</span>
+        </div>
+
+        <div class="threat-feed">
+            {% for alert in alerts %}
+            <div class="feed-item {{ alert.severity }}">
+                <div class="feed-dot {{ alert.severity }}"></div>
+                <div class="feed-content">
+                    <h4>{{ alert.title }}</h4>
+                    <p>{{ alert.message }}</p>
+                </div>
+            </div>
+            {% else %}
+            <p>No active alerts.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="panel-head">
+        <h3>Alert Cards</h3>
+        <span class="panel-tag">Threat Levels</span>
+    </div>
+
+    <div class="cards-grid">
+        {% for alert in alerts %}
+        <div class="alert {{ alert.severity }}">
+            <h3>{{ alert.title }}</h3>
+            <p>{{ alert.message }}</p>
+        </div>
+        {% else %}
+        <p>No active alerts.</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
