@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SentinelNet // AI-NIDS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="cyber-bg"></div>
+    <div class="container">
+        <div class="glass-card">
+            <header>
+                <h1>SENTINEL<span>NET</span></h1>
+                <p class="tagline">AI-POWERED NETWORK INTRUSION DETECTION</p>
+            </header>
+
+            <form action="/predict" method="post" enctype="multipart/form-data">
+                <div class="upload-area">
+                    <input type="file" name="file" id="file" required>
+                    <label for="file">
+                        <i class="fas fa-microchip"></i> 
+                        <span id="label-txt">UPLOAD TRAFFIC LOGS</span>
+                    </label>
+                    <div id="file-name" class="filename-tag" style="display:none;"></div>
+                </div>
+                <button type="submit" class="analyze-btn">DETECT NETWORK TRAFFIC</button>
+            </form>
+
+            {% if chart_labels %}
+            <div class="dashboard-ui">
+                <div class="risk-section">
+                    <div class="risk-header"><span>THREAT DENSITY:</span><strong>{{ percent }}%</strong></div>
+                    <div class="meter-bg"><div class="meter-fill" style="width: {{ percent }}%"></div></div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="threatChart"></canvas>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-box">TOTAL<br><strong>{{ total }}</strong></div>
+                    <div class="stat-box danger">THREATS<br><strong>{{ attacks }}</strong></div>
+                    <div class="stat-box success">SECURE<br><strong>{{ safe }}</strong></div>
+                </div>
+
+                <div class="feed-container">
+                    <h3><i class="fas fa-terminal"></i> LIVE ALERT FEED</h3>
+                    <ul class="alert-list">
+                        {% for p in predictions %}
+                        <li class="{{ 'alert-red' if p != 'NORMAL' else 'alert-green' }}">
+                            <span>PID_{{ loop.index + 1000 }}</span>
+                            <strong>{{ p }}</strong>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <script>
+                new Chart(document.getElementById('threatChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: {{ chart_labels|safe }},
+                        datasets: [{
+                            data: {{ chart_values|safe }},
+                            /* ORDER: Normal, DoS, R2L, Probe, Other, U2R 
+                               Using 6 UNIQUE colors so 'Normal' and 'Other' are distinct
+                            */
+                            backgroundColor: [
+                                '#2ed573', // NORMAL - Green
+                                '#ff4757', // DOS - Red
+                                '#ffa502', // R2L - Orange
+                                '#3742fa', // PROBE - Blue
+                                '#00d2ff', // OTHER - Cyan (Changed from Green to be unique!)
+                                '#eccc68'  // U2R - Gold
+                            ],
+                            borderColor: '#0a192f', 
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true, 
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { 
+                                position: 'bottom', 
+                                labels: { 
+                                    color: '#00d2ff', 
+                                    font: { size: 11, family: 'Share Tech Mono' },
+                                    padding: 15,
+                                    usePointStyle: true
+                                } 
+                            } 
+                        },
+                        cutout: '75%' 
+                    }
+                });
+            </script>
+            {% endif %}
+        </div>
+    </div>
+    <script>
+        document.getElementById('file').onchange = function () {
+            document.getElementById('file-name').innerHTML = "> " + this.value.split('\\').pop();
+            document.getElementById('file-name').style.display = 'block';
+        };
+    </script>
+</body>
+</html>
