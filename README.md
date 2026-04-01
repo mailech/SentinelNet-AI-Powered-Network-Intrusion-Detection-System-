@@ -93,6 +93,20 @@ SentinelNet/
 
 ---
 
+## Web Application & Live Dashboard
+
+SentinelNet features a fully functional, production-ready web application built with **Flask** and **Vanilla JavaScript** (acting as a Single Page Application). 
+
+### Key Dashboard Features:
+- **Real-Time Traffic Simulator:** A multi-threaded backend engine continuously streams packets from the NSL-KDD test set, mimicking real-world network loads.
+- **Live Telemetry Charts:** Instantaneous rendering of packet volume and attack spikes via Chart.js, seamlessly updating without page reloads.
+- **Active Incident Quarantine:** Found an intrusion? Click "Block IP" in the Live Alerts feed. The backend actively halts subsequent traffic from that source, incrementing a real-time "Blocked by IDS" metric.
+- **Start/Stop Controls:** Pause and resume the incoming network evaluation simulation dynamically.
+- **File Scanner & Manual Analyzer:** Upload full `.csv`/`.txt` traffic dumps for immediate batch analysis, or drop individual connection stats into the single-record analyzer.
+- **Model Details:** Native UI routes detailing the ML pipeline's accuracy, F1-Scores, and Random Forest feature metrics.
+
+---
+
 ## Results
 
 - Random Forest achieved strong performance after tuning.
