@@ -38,7 +38,6 @@ In this project, I developed **SentinelNet**, an AI-powered Network Intrusion De
 * Generated alerts & logs
 * Built end-to-end ML pipeline
 
----
 
 ##  Dataset Used
 
@@ -121,8 +120,7 @@ Dataset → Preprocessing → Feature Engineering → Model Training → Evaluat
 * Developed real-time alert system
 * Improved detection through feature engineering
 
----
 
 ##  Developed By
 
-**   Konduru Vennela Raghava   **
+**Konduru Vennela Raghava**
