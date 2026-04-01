@@ -33,26 +33,20 @@
 
     <nav>
       <div class="nav-sec">Monitoring</div>
-      <button class="nav-item active" onclick="scrollToSection('overview', this)">
-        <span class="ni">📊</span>Overview
-        <span class="live-pill"><span class="live-dot"></span>LIVE</span>
+      <button class="nav-item active" id="nav-dashboard" onclick="navigate('dashboard', this)">
+        <span class="ni">📊</span>Dashboard
+        <span class="live-pill" id="live-indicator-pill"><span class="live-dot"></span>LIVE</span>
       </button>
-      <button class="nav-item" onclick="scrollToSection('upload-sec', this)">
+      <button class="nav-item" id="nav-upload" onclick="navigate('upload', this)">
         <span class="ni">📂</span>File Upload
       </button>
-      <button class="nav-item" onclick="scrollToSection('analyzer-sec', this)">
+      <button class="nav-item" id="nav-analyzer" onclick="navigate('analyzer', this)">
         <span class="ni">🔍</span>Analyzer
       </button>
-      <button class="nav-item" onclick="scrollToSection('alerts-sec', this)">
-        <span class="ni">🚨</span>Alerts
-      </button>
-
+      
       <div class="nav-sec">Details</div>
-      <button class="nav-item" onclick="scrollToSection('metrics-sec', this)">
-        <span class="ni">📈</span>Model Metrics
-      </button>
-      <button class="nav-item" onclick="scrollToSection('about-sec', this)">
-        <span class="ni">ℹ️</span>About
+      <button class="nav-item" id="nav-about" onclick="navigate('about', this)">
+        <span class="ni">ℹ️</span>Model Details & About
       </button>
     </nav>
 
@@ -76,19 +70,34 @@
         <h1>🛡️ SentinelNet — Network Intrusion Detection</h1>
         <div class="topbar-sub" id="last-refresh">Loading data…</div>
       </div>
-      <button class="btn btn-primary" onclick="refreshAll()">⟳ Refresh</button>
+      <div style="display:flex;gap:12px">
+        <button class="btn btn-ghost" id="btn-toggle-sim" onclick="toggleSimulation()">⏸️ Pause IDS Traffic</button>
+        <button class="btn btn-primary" onclick="refreshAll()">⟳ Refresh</button>
+      </div>
     </header>
 
     <div class="content">
 
-      <!-- ── 1. Dataset Overview ─────────────────────────────── -->
+      <!-- ── 1. Dashboard ─────────────────────────────── -->
+      <div class="page-view" id="page-dashboard">
       <div class="section" id="overview">
         <div class="sec-header">
-          <span class="sec-title">📊 Dataset Overview</span>
-          <span class="sec-badge" id="ds-badge">NSL-KDD Training Set</span>
+          <span class="sec-title">📊 Live Traffic Monitoring</span>
+          <span class="sec-badge" id="ds-badge">Real-Time Simulation</span>
         </div>
         <div class="stats-row" id="stats-row">
           <div class="spin-wrap"><div class="spinner"></div></div>
+        </div>
+      </div>
+
+      <!-- Live Traffic Chart -->
+      <div class="section">
+        <div class="panel">
+          <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center;">
+             <div><span class="dot dot-green"></span>Traffic Volume (Packets/sec)</div>
+             <span id="live-status-pulse" style="font-size:12px;color:var(--green);display:flex;align-items:center;gap:6px"><span class="live-dot" style="background:var(--green)"></span> Streaming</span>
+          </div>
+          <canvas id="liveChart" height="60"></canvas>
         </div>
       </div>
 
@@ -106,7 +115,30 @@
         </div>
       </div>
 
+      <!-- ── 4. Live Intrusion Alerts (Moved to Dashboard) ────────────────────── -->
+      <div class="section" id="alerts-sec">
+        <div class="sec-header">
+          <span class="sec-title">🚨 Live Intrusion Alerts</span>
+          <span class="sec-badge" id="alert-count-badge">Loading…</span>
+        </div>
+        <div class="panel">
+          <div class="filter-row">
+            <button class="fbtn active" onclick="filterAlerts('All', this)">All</button>
+            <button class="fbtn" onclick="filterAlerts('Critical', this)">🔴 Critical</button>
+            <button class="fbtn" onclick="filterAlerts('High', this)">🟠 High</button>
+            <button class="fbtn" onclick="filterAlerts('Medium', this)">🟡 Medium</button>
+            <button class="fbtn" onclick="filterAlerts('Low', this)">🟢 Low</button>
+          </div>
+          <div class="alerts-wrap" id="alerts-area">
+            <div class="spin-wrap"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+
+      </div><!-- /page-dashboard -->
+
       <!-- ── 2. File Upload & Detect ────────────────────────── -->
+      <div class="page-view" id="page-upload" style="display:none">
       <div class="section" id="upload-sec">
         <div class="sec-header">
           <span class="sec-title">📂 Upload &amp; Detect</span>
@@ -159,8 +191,10 @@
           </div>
         </div>
       </div>
+      </div><!-- /page-upload -->
 
       <!-- ── 3. Single Connection Analyzer ─────────────────── -->
+      <div class="page-view" id="page-analyzer" style="display:none">
       <div class="section" id="analyzer-sec">
         <div class="sec-header">
           <span class="sec-title">🔍 Single Connection Analyzer</span>
@@ -235,28 +269,13 @@
           <div class="analyze-result" id="analyze-result"></div>
         </div>
       </div>
+      </div><!-- /page-analyzer -->
 
-      <!-- ── 4. Sample Intrusion Alerts ────────────────────── -->
-      <div class="section" id="alerts-sec">
-        <div class="sec-header">
-          <span class="sec-title">🚨 Sample Intrusion Alerts</span>
-          <span class="sec-badge" id="alert-count-badge">Loading…</span>
-        </div>
-        <div class="panel">
-          <div class="filter-row">
-            <button class="fbtn active" onclick="filterAlerts('All', this)">All</button>
-            <button class="fbtn" onclick="filterAlerts('Critical', this)">🔴 Critical</button>
-            <button class="fbtn" onclick="filterAlerts('High', this)">🟠 High</button>
-            <button class="fbtn" onclick="filterAlerts('Medium', this)">🟡 Medium</button>
-            <button class="fbtn" onclick="filterAlerts('Low', this)">🟢 Low</button>
-          </div>
-          <div class="alerts-wrap" id="alerts-area">
-            <div class="spin-wrap"><div class="spinner"></div></div>
-          </div>
-        </div>
-      </div>
 
-      <!-- ── 5. Model Performance Metrics ──────────────────── -->
+
+      <!-- ── 5. Model Metrics & About ──────────────────── -->
+      <div class="page-view" id="page-about" style="display:none">
+      
       <div class="section" id="metrics-sec">
         <div class="sec-header">
           <span class="sec-title">📈 Model Performance</span>
@@ -293,6 +312,7 @@
           </div>
         </div>
       </div>
+      </div><!-- /page-about -->
 
     </div><!-- /content -->
   </div><!-- /main-col -->
