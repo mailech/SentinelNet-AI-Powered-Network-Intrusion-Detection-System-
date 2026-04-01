@@ -6,9 +6,11 @@
 // ── Chart instances (kept to allow destroy on refresh) ──────
 let attackChartInst = null;
 let protoChartInst = null;
+let liveChartInst = null;
 
 // ── Alert store ─────────────────────────────────────────────
 let allAlerts = [];
+let currentFilter = 'All';
 
 /* ============================================================
    TOAST NOTIFICATION
@@ -22,38 +24,118 @@ function toast(msg, type = 'success') {
 }
 
 /* ============================================================
-   SIDEBAR NAVIGATION
+   SIDEBAR NAVIGATION AND ROUTING
    ============================================================ */
-function scrollToSection(id, btn) {
+function navigate(page, btn) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (btn) btn.classList.add('active');
+  
+  document.querySelectorAll('.page-view').forEach(p => p.style.display = 'none');
+  const target = document.getElementById('page-' + page);
+  if (target) target.style.display = 'block';
+  
+  history.pushState(null, null, '/' + page);
+  window.scrollTo(0, 0);
+}
+
+window.addEventListener('popstate', () => {
+  const page = window.location.pathname.replace('/', '') || 'dashboard';
+  const btn = document.getElementById('nav-' + page);
+  navigate(page, btn);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const page = window.location.pathname.replace('/', '') || 'dashboard';
+  const btn = document.getElementById('nav-' + page);
+  if (btn) btn.click();
+});
+
+/* ============================================================
+   SIMULATION AND QUARANTINE CONTROLS
+   ============================================================ */
+let simStatus = 'active';
+let quarantinedList = [];
+
+async function toggleSimulation() {
+  const action = simStatus === 'active' ? 'stop' : 'start';
+  try {
+    const res = await fetch('/api/sim/toggle', { method: 'POST', body: JSON.stringify({action}) });
+    const data = await res.json();
+    simStatus = data.status;
+    updateSimUI();
+    toast(simStatus === 'active' ? '▶️ Live traffic resumed' : '⏸️ Simulation paused');
+  } catch (e) {
+    toast('Error toggling simulation', 'error');
+  }
+}
+
+function updateSimUI() {
+  const btn = document.getElementById('btn-toggle-sim');
+  const ind = document.getElementById('live-indicator-pill');
+  if (simStatus === 'active') {
+    btn.textContent = '⏸️ Pause IDS Traffic';
+    ind.innerHTML = '<span class="live-dot"></span>LIVE';
+    ind.style.background = 'rgba(248,113,113,0.15)';
+    ind.style.color = '#f87171';
+  } else {
+    btn.textContent = '▶️ Resume Traffic';
+    ind.innerHTML = '<span class="live-dot" style="background:#fb923c;animation:none"></span>PAUSED';
+    ind.style.background = 'rgba(251,146,60,0.15)';
+    ind.style.color = '#fb923c';
+  }
+}
+
+async function quarantineIP(ip) {
+  try {
+    const res = await fetch('/api/quarantine', { method: 'POST', body: JSON.stringify({ip}) });
+    const data = await res.json();
+    quarantinedList = data.quarantined || [];
+    toast(`🛡️ IP ${ip} blocked via firewall.`);
+    filterAlerts(currentFilter, null); // Re-render table
+  } catch (e) {
+    toast('Quarantine failed', 'error');
+  }
 }
 
 /* ============================================================
-   DATASET STATS  →  GET /api/stats
+   LIVE TRAFFIC DATA  →  GET /api/live_data
    ============================================================ */
-async function loadStats() {
+async function fetchLiveData() {
   try {
-    const res = await fetch('/api/stats');
+    const res = await fetch('/api/live_data');
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
+    const stats = data.stats;
+    const rate = stats.total > 0 ? (stats.attack / stats.total * 100).toFixed(1) : 0;
+
     // Badge
     document.getElementById('ds-badge').textContent =
-      `${data.total.toLocaleString()} records · ${data.attack_rate}% attack rate`;
+      `${stats.total.toLocaleString()} pkts processed · ${rate}% attacks`;
 
     // Stat cards
     document.getElementById('stats-row').innerHTML =
-      statCard('blue', '🗃️', 'Total Records', data.total.toLocaleString(), 'NSL-KDD training set') +
-      statCard('red', '🚨', 'Attack Samples', data.attacks.toLocaleString(), 'Malicious connections') +
-      statCard('green', '✅', 'Normal Samples', data.normal.toLocaleString(), 'Benign connections') +
-      statCard('purple', '📡', 'Attack Rate', data.attack_rate + '%', 'Of total traffic');
+      statCard('blue', '🗃️', 'Total Packets', stats.total.toLocaleString(), 'Processed in real-time') +
+      statCard('red', '🚨', 'Attacks Detected', stats.attack.toLocaleString(), 'Malicious connections') +
+      statCard('green', '✅', 'Normal Traffic', stats.normal.toLocaleString(), 'Benign connections') +
+      statCard('purple', '🛡️', 'Blocked by IDS', (stats.blocked || 0).toLocaleString(), 'Quarantined IP traffic');
 
-    buildAttackChart(data.attack_types);
-    buildProtoChart(data.protocols);
+    buildAttackChart(stats.attack_types);
+    buildProtoChart(stats.protocols);
+    buildLiveChart(data.timeseries);
+    
+    // Update State
+    allAlerts = data.alerts;
+    simStatus = data.status || 'active';
+    quarantinedList = data.quarantined || [];
+    updateSimUI();
+
+    document.getElementById('alert-count-badge').textContent =
+      `${allAlerts.length} recent intrusions`;
+    filterAlerts(currentFilter, null);
+
   } catch (e) {
-    toast('Stats load failed: ' + e.message, 'error');
+    console.warn('Live data fetch failed:', e);
   }
 }
 
@@ -68,54 +150,74 @@ function statCard(cls, emoji, label, val, sub) {
 
 /* ── Attack-type doughnut chart ─────────────────────────────── */
 function buildAttackChart(types) {
-  if (attackChartInst) { attackChartInst.destroy(); attackChartInst = null; }
-  const ctx = document.getElementById('attackChart').getContext('2d');
-  attackChartInst = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: Object.keys(types),
-      datasets: [{
-        data: Object.values(types),
-        backgroundColor: ['#34d399', '#f87171', '#38bdf8', '#818cf8', '#fb923c', '#facc15'],
-        borderWidth: 2,
-        borderColor: '#0d1526'
-      }]
-    },
-    options: {
-      cutout: '62%',
-      responsive: true,
-      maintainAspectRatio: true,
-      plugins: {
-        legend: { position: 'bottom', labels: { color: '#64748b', padding: 10, font: { size: 11 } } }
+  const keys = Object.keys(types).sort();
+  const labels = keys;
+  const dataVals = keys.map(k => types[k]);
+
+  if (attackChartInst) {
+    attackChartInst.data.labels = labels;
+    attackChartInst.data.datasets[0].data = dataVals;
+    attackChartInst.update('none');
+  } else {
+    const ctx = document.getElementById('attackChart').getContext('2d');
+    attackChartInst = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: dataVals,
+          backgroundColor: ['#f87171', '#34d399', '#38bdf8', '#818cf8', '#fb923c', '#facc15'],
+          borderWidth: 2,
+          borderColor: '#0d1526'
+        }]
+      },
+      options: {
+        cutout: '62%',
+        responsive: true,
+        maintainAspectRatio: true,
+        animation: { duration: 0 },
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#64748b', padding: 10, font: { size: 11 } } }
+        }
       }
-    }
-  });
+    });
+  }
 }
 
 /* ── Protocol bar chart ─────────────────────────────────────── */
 function buildProtoChart(protos) {
-  if (protoChartInst) { protoChartInst.destroy(); protoChartInst = null; }
-  const ctx = document.getElementById('protoChart').getContext('2d');
-  protoChartInst = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: Object.keys(protos).map(k => k.toUpperCase()),
-      datasets: [{
-        data: Object.values(protos),
-        backgroundColor: ['rgba(56,189,248,.75)', 'rgba(129,140,248,.75)', 'rgba(52,211,153,.75)'],
-        borderRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { color: 'rgba(99,179,237,.06)' }, ticks: { color: '#64748b', font: { size: 10 } }, border: { color: 'transparent' } },
-        y: { grid: { color: 'rgba(99,179,237,.06)' }, ticks: { color: '#64748b', font: { size: 10 } }, border: { color: 'transparent' } }
+  const keys = Object.keys(protos).sort();
+  const labels = keys.map(k => k.toUpperCase());
+  const dataVals = keys.map(k => protos[k]);
+
+  if (protoChartInst) {
+    protoChartInst.data.labels = labels;
+    protoChartInst.data.datasets[0].data = dataVals;
+    protoChartInst.update('none');
+  } else {
+    const ctx = document.getElementById('protoChart').getContext('2d');
+    protoChartInst = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: dataVals,
+          backgroundColor: ['rgba(56,189,248,.75)', 'rgba(52,211,153,.75)', 'rgba(129,140,248,.75)'],
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        animation: { duration: 0 },
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: 'rgba(99,179,237,.06)' }, ticks: { color: '#64748b', font: { size: 10 } }, border: { color: 'transparent' } },
+          y: { grid: { color: 'rgba(99,179,237,.06)' }, ticks: { color: '#64748b', font: { size: 10 } }, border: { color: 'transparent' } }
+        }
       }
-    }
-  });
+    });
+  }
 }
 
 /* ============================================================
@@ -142,23 +244,63 @@ async function loadMetrics() {
   }
 }
 
-/* ============================================================
-   SAMPLE ALERTS  →  GET /api/sample_alerts
-   ============================================================ */
-async function loadAlerts() {
-  document.getElementById('alerts-area').innerHTML =
-    '<div class="spin-wrap"><div class="spinner"></div></div>';
-  try {
-    const res = await fetch('/api/sample_alerts');
-    allAlerts = await res.json();
-    document.getElementById('alert-count-badge').textContent =
-      `${allAlerts.length} intrusions detected`;
-    renderAlerts(allAlerts);
-  } catch (e) {
-    document.getElementById('alerts-area').innerHTML =
-      `<div class="empty-msg">Failed to load alerts: ${e.message}</div>`;
+/* ── Live Traffic Line Chart ─────────────────────────────────────── */
+function buildLiveChart(tsData) {
+  const ctx = document.getElementById('liveChart').getContext('2d');
+  const labels = tsData.map(d => d.timestamp);
+  const totalVals = tsData.map(d => d.total);
+  const attackVals = tsData.map(d => d.attacks);
+
+  if (!liveChartInst) {
+    liveChartInst = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Total Packets',
+            data: totalVals,
+            borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56,189,248,0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 0
+          },
+          {
+            label: 'Attacks',
+            data: attackVals,
+            borderColor: '#f87171',
+            backgroundColor: 'rgba(248,113,113,0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 0 },
+        plugins: { legend: { display: true, position: 'top', labels: { color: '#64748b', boxWidth: 12 } } },
+        scales: {
+          x: { grid: { color: 'rgba(99,179,237,.06)' }, ticks: { color: '#64748b' } },
+          y: { grid: { color: 'rgba(99,179,237,.06)' }, ticks: { color: '#64748b' }, beginAtZero: true }
+        }
+      }
+    });
+  } else {
+    liveChartInst.data.labels = labels;
+    liveChartInst.data.datasets[0].data = totalVals;
+    liveChartInst.data.datasets[1].data = attackVals;
+    liveChartInst.update();
   }
 }
+
+/* ============================================================
+   ALERTS RENDERER
+   ============================================================ */
 
 function renderAlerts(list) {
   const area = document.getElementById('alerts-area');
@@ -169,14 +311,14 @@ function renderAlerts(list) {
   area.innerHTML = `<table>
     <thead><tr>
       <th>#</th><th>Timestamp</th><th>Source IP</th><th>Dest IP</th>
-      <th>Protocol</th><th>Service</th><th>Type</th><th>Confidence</th><th>Severity</th>
+      <th>Protocol</th><th>Service</th><th>Type</th><th>Confidence</th><th>Severity</th><th>Action</th>
     </tr></thead>
     <tbody>
       ${list.map((a, i) => `
       <tr>
         <td class="mono" style="color:var(--muted)">${String(i + 1).padStart(2, '0')}</td>
         <td class="mono" style="color:var(--muted);font-size:10px">${a.timestamp}</td>
-        <td class="mono" style="color:var(--accent)">${a.src_ip}</td>
+        <td class="mono" style="${quarantinedList.includes(a.src_ip) ? 'text-decoration:line-through;color:var(--red)' : 'color:var(--accent)'}">${a.src_ip}</td>
         <td class="mono" style="color:var(--muted)">${a.dst_ip}</td>
         <td><span class="badge b-probe">${a.protocol}</span></td>
         <td style="color:var(--muted)">${a.service}</td>
@@ -188,15 +330,23 @@ function renderAlerts(list) {
           </div>
         </td>
         <td><span class="badge b-${a.severity.toLowerCase()}">${a.severity}</span></td>
+        <td>
+          ${quarantinedList.includes(a.src_ip) 
+            ? '<span class="badge" style="background:#450a0a;color:#fca5a5;border:1px solid #7f1d1d">Blocked</span>'
+            : `<button class="btn btn-primary" style="padding:4px 8px;font-size:11px" onclick="quarantineIP('${a.src_ip}')">Block IP</button>`}
+        </td>
       </tr>`).join('')}
     </tbody>
   </table>`;
 }
 
 function filterAlerts(level, btn) {
-  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderAlerts(level === 'All' ? allAlerts : allAlerts.filter(a => a.severity === level));
+  if (btn) {
+    document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  currentFilter = level;
+  renderAlerts(currentFilter === 'All' ? allAlerts : allAlerts.filter(a => a.severity === currentFilter));
 }
 
 /* ============================================================
@@ -238,9 +388,9 @@ async function loadSampleFile() {
   btn.textContent = '⏳ Loading sample…';
   btn.disabled = true;
   try {
-    await loadAlerts();
-    toast('✅ Showing sample predictions from the test set below ↓');
-    document.getElementById('alerts-sec').scrollIntoView({ behavior: 'smooth' });
+    toast('✅ Checking live predictions below ↓');
+    navigate('dashboard');
+    setTimeout(() => document.getElementById('alerts-sec').scrollIntoView({ behavior: 'smooth' }), 50);
   } catch (e) {
     toast('Failed: ' + e.message, 'error');
   }
@@ -391,7 +541,7 @@ function loadNormalExample() {
    ============================================================ */
 async function refreshAll() {
   document.getElementById('last-refresh').textContent = 'Refreshing…';
-  await Promise.all([loadStats(), loadMetrics(), loadAlerts()]);
+  await Promise.all([fetchLiveData(), loadMetrics()]);
   document.getElementById('last-refresh').textContent =
     'Last updated: ' + new Date().toLocaleTimeString();
 }
@@ -399,5 +549,5 @@ async function refreshAll() {
 // Initial load
 refreshAll();
 
-// Auto-refresh alerts every 60 s
-setInterval(loadAlerts, 60000);
+// Auto-refresh real-time data every 2 seconds
+setInterval(fetchLiveData, 2000);
