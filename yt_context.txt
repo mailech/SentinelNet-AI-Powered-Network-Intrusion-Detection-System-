@@ -1,0 +1,10 @@
+TITLE: SentinelAI : AI-driven Network Intrusion Detection System (NIDS) - YouTube
+DESCRIPTION:
+SentinelAI is an AI-driven Network Intrusion Detection System (NIDS) designed to monitor network traffic and detect suspicious or malicious activities in real time.
+
+Modern networks face continuous threats such as brute-force login attempts, Distributed Denial of Service (DDoS) attacks, data exfiltration, and unauthorized access attempts. Traditional rule-based firewalls and signature-based detection systems struggle to identify new and evolving attack patterns.
+
+This project leverages Machine Learning–based anomaly detection to learn normal network behavior and automatically identify deviations that may indicate cyber threats.
+
+TRANSCRIPT:
+Error fetching transcript: type object 'YouTubeTranscriptApi' has no attribute 'get_transcript'
