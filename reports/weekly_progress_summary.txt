@@ -9,3 +9,7 @@ Week 4 – Trained multiple machine learning models including Logistic Regressio
 Week 5 – Applied unsupervised anomaly detection techniques such as K-Means, Isolation Forest, Local Outlier Factor, and One-Class SVM, and visualized results using PCA.
 
 Week 6 – Performed hyperparameter tuning using GridSearchCV, compared model performance, generated ROC curves, and validated model stability using cross-validation.
+
+Week 7 – Designed and initialized the Flask Web Application backend. Handled batch dataset predictions, dynamic logging of detected intrusions, and exposed REST APIs to accurately stream model outputs, confidences, and network telemetry to the frontend securely.
+
+Week 8 – Deployed the Single Page Application (SPA) dashboard. Engineered a real-time background traffic simulation streaming directly to zero-latency Chart.js interfaces. Integrated active Incident Response mechanics including network pausing and a dynamic IP Quarantine feature that mimics a hardware firewall by hard-dropping malicious traffic. Finalized comprehensive project reports and presentation frameworks.
