@@ -211,9 +211,35 @@ This project uses the **NSL-KDD dataset**, an improved version of the KDD Cup 19
 
 ---
 
+## 🤖 Models
+
+Trained model files are hosted on HuggingFace Spaces due to size constraints:
+
+👉 [https://huggingface.co/spaces/Hitan2004/sentinelnet](https://huggingface.co/spaces/Hitan2004/sentinelnet)
+
+To run locally, download these files and place them in the `models/` folder:
+- `sentinel_brain.joblib`
+- `label_encoder.joblib`
+- `ohe_encoder.joblib`
+- `freq_map.joblib`
+- `scaler.joblib`
+- `selected_features.joblib`
+
+---
+
+## 🙏 Acknowledgements
+
+This project was built as part of an internship program.
+
+**Mentor:** Subhash — [GitHub](https://github.com/mailech)
+
+Special thanks to my mentor for guidance and support throughout this project.
+
+---
+
 ## 📬 Contact
 
-**Hitan** — [GitHub](https://github.com/Hitan547)
+**Hitan** — [GitHub](https://github.com/Hitan547) · [HuggingFace](https://huggingface.co/Hitan2004)
 
 ---
 
