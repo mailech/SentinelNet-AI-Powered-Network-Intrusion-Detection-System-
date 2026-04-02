@@ -137,9 +137,10 @@ def simulate_realtime_traffic():
 
 # ── Load artifacts once ────────────────────────────────────────────────────
 model, preprocessor, df_train = None, None, None
+load_error_message = None
 
 def load_all():
-    global model, preprocessor, df_train
+    global model, preprocessor, df_train, load_error_message
     try:
         model        = joblib.load(MODEL_PATH)
         preprocessor = joblib.load(PREPROC_PATH)
@@ -151,6 +152,8 @@ def load_all():
         t = threading.Thread(target=simulate_realtime_traffic, daemon=True)
         t.start()
     except Exception as e:
+        import traceback
+        load_error_message = traceback.format_exc()
         print(f"⚠️  Load error: {e}")
 
 load_all()
@@ -183,6 +186,10 @@ def predict_dataframe(df: pd.DataFrame):
 @app.route("/<page>")
 def index(page="dashboard"):
     return render_template("index.html")
+
+@app.route("/api/debug")
+def api_debug():
+    return jsonify(error=load_error_message)
 
 # ── API: dataset overview stats ────────────────────────────────────────────
 @app.route("/api/live_data")
