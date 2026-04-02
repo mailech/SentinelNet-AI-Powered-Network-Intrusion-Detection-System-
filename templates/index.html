@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SentinelNet – AI-Powered NIDS</title>
+  <link rel="stylesheet" href="../static/css/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══════════════════════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">🛡️</span>
+    <span class="logo-text">SentinelNet</span>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+      <span class="nav-icon">📊</span><span>Dashboard</span>
+    </a>
+    <a class="nav-item" data-page="live" onclick="showPage('live')">
+      <span class="nav-icon">📡</span><span>Live Feed</span>
+      <span class="badge" id="live-badge">LIVE</span>
+    </a>
+    <a class="nav-item" data-page="upload" onclick="showPage('upload')">
+      <span class="nav-icon">📂</span><span>CSV Analyzer</span>
+      <span class="badge-new" id="upload-badge">NEW</span>
+    </a>
+    <a class="nav-item" data-page="alerts" onclick="showPage('alerts')">
+      <span class="nav-icon">🚨</span><span>Alerts</span>
+      <span class="badge-count" id="alert-count">0</span>
+    </a>
+    <a class="nav-item" data-page="predict" onclick="showPage('predict')">
+      <span class="nav-icon">🔮</span><span>Predict</span>
+    </a>
+    <a class="nav-item" data-page="logs" onclick="showPage('logs')">
+      <span class="nav-icon">📋</span><span>Logs</span>
+    </a>
+    <a class="nav-item" data-page="model" onclick="showPage('model')">
+      <span class="nav-icon">🤖</span><span>Model Info</span>
+    </a>
+  </nav>
+  <div class="sidebar-status">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-label">Connecting…</span>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══════════════════════════════════════════════════════════════ -->
+<main class="main" id="main">
+  <!-- Top bar -->
+  <header class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    <h1 class="page-title" id="page-title">Dashboard</h1>
+    <div class="topbar-right">
+      <span id="clock" class="clock"></span>
+      <button class="btn-simulate" onclick="runSimulation()">⚡ Simulate 20 Packets</button>
+    </div>
+  </header>
+
+  <!-- ══ PAGE: DASHBOARD ════════════════════════════════════════════════ -->
+  <section class="page active" id="page-dashboard">
+    <div class="stat-grid">
+      <div class="stat-card total">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+          <div class="stat-value" id="s-total">0</div>
+          <div class="stat-label">Total Packets</div>
+        </div>
+      </div>
+      <div class="stat-card attack">
+        <div class="stat-icon">🚨</div>
+        <div class="stat-info">
+          <div class="stat-value" id="s-attacks">0</div>
+          <div class="stat-label">Attacks Detected</div>
+        </div>
+      </div>
+      <div class="stat-card normal">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+          <div class="stat-value" id="s-normal">0</div>
+          <div class="stat-label">Normal Traffic</div>
+        </div>
+      </div>
+      <div class="stat-card critical">
+        <div class="stat-icon">🔴</div>
+        <div class="stat-info">
+          <div class="stat-value" id="s-critical">0</div>
+          <div class="stat-label">Critical Alerts</div>
+        </div>
+      </div>
+      <div class="stat-card rate">
+        <div class="stat-icon">📈</div>
+        <div class="stat-info">
+          <div class="stat-value" id="s-rate">0%</div>
+          <div class="stat-label">Detection Rate</div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h3>Traffic Timeline</h3>
+        <canvas id="timelineChart" height="120"></canvas>
+      </div>
+      <div class="chart-card small">
+        <h3>Traffic Split</h3>
+        <canvas id="splitChart" height="160"></canvas>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card small">
+        <h3>Severity Breakdown</h3>
+        <canvas id="severityChart" height="160"></canvas>
+      </div>
+      <div class="chart-card small">
+        <h3>Protocol Distribution</h3>
+        <canvas id="protocolChart" height="160"></canvas>
+      </div>
+      <div class="chart-card small">
+        <h3>Confidence Distribution</h3>
+        <canvas id="confChart" height="160"></canvas>
+      </div>
+    </div>
+    <div class="section-card">
+      <h3>🚨 Recent Alerts</h3>
+      <div id="recent-alerts-list" class="alerts-mini"></div>
+    </div>
+  </section>
+
+  <!-- ══ PAGE: LIVE FEED ════════════════════════════════════════════════ -->
+  <section class="page" id="page-live">
+    <div class="live-controls">
+      <button class="btn-green" id="btn-start" onclick="startLive()">▶ Start Live Feed</button>
+      <button class="btn-red"   id="btn-stop"  onclick="stopLive()" disabled>⏹ Stop</button>
+      <span class="live-info" id="live-info">Feed stopped</span>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="live-table">
+        <thead>
+          <tr>
+            <th>Time</th><th>Src IP</th><th>Dst IP</th>
+            <th>Protocol</th><th>Port</th>
+            <th>Prediction</th><th>Severity</th><th>Confidence</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="live-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══ PAGE: CSV ANALYZER ════════════════════════════════════════════ -->
+  <section class="page" id="page-upload">
+    <!-- Upload Zone -->
+    <div class="upload-zone" id="upload-zone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+      <div class="upload-icon">📂</div>
+      <p class="upload-title">Drag & Drop your CSV file here</p>
+      <p class="upload-sub">or click to browse — supports NSL-KDD / CICIDS format</p>
+      <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleFileSelect(event)" />
+      <button class="btn-primary" onclick="document.getElementById('csv-file-input').click()">📁 Browse File</button>
+    </div>
+
+    <!-- Progress -->
+    <div class="upload-progress-wrap" id="upload-progress-wrap" style="display:none">
+      <div class="upload-progress-info">
+        <span id="upload-filename">Analysing…</span>
+        <span id="upload-pct">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-bar-fill"></div>
+      </div>
+      <p id="upload-status-text" style="font-size:12px;color:var(--text-muted);margin-top:6px">Processing rows…</p>
+    </div>
+
+    <!-- Results Summary Cards -->
+    <div id="csv-results-section" style="display:none">
+      <div class="csv-summary-grid">
+        <div class="csv-stat-card csv-total">
+          <div class="csv-stat-icon">📦</div>
+          <div><div class="csv-stat-val" id="csv-total">0</div><div class="csv-stat-lbl">Total Analysed</div></div>
+        </div>
+        <div class="csv-stat-card csv-attack-c">
+          <div class="csv-stat-icon">🚨</div>
+          <div><div class="csv-stat-val" id="csv-attacks">0</div><div class="csv-stat-lbl">Attacks Found</div></div>
+        </div>
+        <div class="csv-stat-card csv-normal-c">
+          <div class="csv-stat-icon">✅</div>
+          <div><div class="csv-stat-val" id="csv-normals">0</div><div class="csv-stat-lbl">Normal Traffic</div></div>
+        </div>
+        <div class="csv-stat-card csv-critical-c">
+          <div class="csv-stat-icon">🔴</div>
+          <div><div class="csv-stat-val" id="csv-critical">0</div><div class="csv-stat-lbl">Critical</div></div>
+        </div>
+        <div class="csv-stat-card csv-rate-c">
+          <div class="csv-stat-icon">📈</div>
+          <div><div class="csv-stat-val" id="csv-rate">0%</div><div class="csv-stat-lbl">Attack Rate</div></div>
+        </div>
+      </div>
+
+      <!-- CSV Charts row -->
+      <div class="chart-grid" style="margin-top:16px">
+        <div class="chart-card">
+          <h3>Attack Type Distribution</h3>
+          <canvas id="csvAttackChart" height="130"></canvas>
+        </div>
+        <div class="chart-card small">
+          <h3>Normal vs Attack</h3>
+          <canvas id="csvSplitChart" height="160"></canvas>
+        </div>
+      </div>
+      <div class="chart-grid" style="margin-top:14px">
+        <div class="chart-card small">
+          <h3>Severity Breakdown</h3>
+          <canvas id="csvSeverityChart" height="160"></canvas>
+        </div>
+        <div class="chart-card small">
+          <h3>Protocol Distribution</h3>
+          <canvas id="csvProtoChart" height="160"></canvas>
+        </div>
+        <div class="chart-card small">
+          <h3>Confidence Histogram</h3>
+          <canvas id="csvConfChart" height="160"></canvas>
+        </div>
+      </div>
+
+      <!-- Table + Export -->
+      <div class="section-card" style="margin-top:16px">
+        <div class="page-header-row" style="margin-bottom:12px">
+          <h3>📋 Packet Analysis Results</h3>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="csv-table-search" placeholder="🔍 Filter…" class="search-input" oninput="filterCsvTable()" />
+            <select id="csv-filter-status" class="search-input" style="width:130px" onchange="filterCsvTable()">
+              <option value="">All Status</option>
+              <option value="ATTACK">Attack Only</option>
+              <option value="NORMAL">Normal Only</option>
+            </select>
+            <button class="btn-outline" onclick="exportCsvResults()">⬇ Export Results</button>
+            <button class="btn-outline" onclick="resetCsvAnalysis()">🔄 New Upload</button>
+          </div>
+        </div>
+        <div class="table-wrap" style="max-height:340px;overflow-y:auto">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Src IP</th><th>Dst IP</th><th>Protocol</th>
+                <th>Prediction</th><th>Severity</th><th>Confidence</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="csv-result-tbody"></tbody>
+          </table>
+        </div>
+        <p id="csv-table-info" style="font-size:12px;color:var(--text-muted);margin-top:8px"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ PAGE: ALERTS ═══════════════════════════════════════════════════ -->
+  <section class="page" id="page-alerts">
+    <div class="page-header-row">
+      <h2>🚨 Active Alerts</h2>
+      <button class="btn-outline" onclick="downloadAlerts()">⬇ Download JSON</button>
+    </div>
+    <div id="alerts-container" class="alert-cards-grid"></div>
+  </section>
+
+  <!-- ══ PAGE: PREDICT ══════════════════════════════════════════════════ -->
+  <section class="page" id="page-predict">
+    <div class="predict-layout">
+      <div class="predict-form-card">
+        <h2>🔮 Real-Time Prediction</h2>
+        <p class="sub">Enter network traffic features to get instant classification.</p>
+        <div class="form-grid">
+          <div class="form-group"><label>Duration (s)</label><input type="number" id="p-duration" value="0" /></div>
+          <div class="form-group"><label>Protocol Type</label>
+            <select id="p-protocol">
+              <option value="0">TCP</option><option value="1">UDP</option><option value="2">ICMP</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Src Bytes</label><input type="number" id="p-srcbytes" value="1000" /></div>
+          <div class="form-group"><label>Dst Bytes</label><input type="number" id="p-dstbytes" value="500" /></div>
+          <div class="form-group"><label>Count</label><input type="number" id="p-count" value="10" /></div>
+          <div class="form-group"><label>Srv Count</label><input type="number" id="p-srvcount" value="10" /></div>
+          <div class="form-group"><label>Logged In</label>
+            <select id="p-logged"><option value="1">Yes</option><option value="0">No</option></select>
+          </div>
+          <div class="form-group"><label>Same Srv Rate</label><input type="number" id="p-samesrv" step="0.01" value="0.9" /></div>
+        </div>
+        <div class="predict-btns">
+          <button class="btn-primary" onclick="runPrediction()">🔍 Analyze Traffic</button>
+          <button class="btn-outline" onclick="fillRandom()">🎲 Random Sample</button>
+        </div>
+      </div>
+      <div class="predict-result-card" id="result-card">
+        <div class="result-placeholder">
+          <div class="placeholder-icon">🛡️</div>
+          <p>Run a prediction to see results here</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ PAGE: LOGS ═════════════════════════════════════════════════════ -->
+  <section class="page" id="page-logs">
+    <div class="page-header-row">
+      <h2>📋 Network Logs</h2>
+      <div>
+        <input type="text" id="log-search" placeholder="🔍 Filter by IP / type…" oninput="filterLogs()" class="search-input" />
+        <button class="btn-outline" onclick="downloadLogs()">⬇ Download CSV</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="log-table">
+        <thead>
+          <tr><th>Time</th><th>Src IP</th><th>Dst IP</th><th>Protocol</th><th>Prediction</th><th>Severity</th><th>Confidence</th><th>Status</th></tr>
+        </thead>
+        <tbody id="log-tbody"></tbody>
+      </table>
+    </div>
+    <button class="btn-outline mt" onclick="loadLogs()">🔄 Refresh Logs</button>
+  </section>
+
+  <!-- ══ PAGE: MODEL INFO ═══════════════════════════════════════════════ -->
+  <section class="page" id="page-model">
+    <div class="model-grid">
+      <div class="model-card">
+        <h2>🤖 Model Information</h2>
+        <div id="model-info-content">Loading…</div>
+      </div>
+      <div class="model-card">
+        <h2>📖 About SentinelNet</h2>
+        <div class="about-content">
+          <p><strong>SentinelNet</strong> is an AI-powered Network Intrusion Detection System (NIDS) that uses machine learning to identify malicious traffic in real-time.</p>
+          <ul>
+            <li>🔹 Dataset: NSL-KDD / CICIDS2017</li>
+            <li>🔹 Models: XGBoost, Random Forest, SVM</li>
+            <li>🔹 Anomaly Detection: Isolation Forest, K-Means</li>
+            <li>🔹 Evaluation: F1, AUC-ROC, Confusion Matrix</li>
+            <li>🔹 Alerts: CSV / JSON / Real-time Dashboard</li>
+            <li>🔹 CSV Upload: Bulk packet analysis</li>
+          </ul>
+          <h3>📚 Project Workflow</h3>
+          <div class="workflow-steps">
+            <div class="wf-step done">1. Data Acquisition</div>
+            <div class="wf-arrow">→</div>
+            <div class="wf-step done">2. Preprocessing</div>
+            <div class="wf-arrow">→</div>
+            <div class="wf-step done">3. Feature Eng.</div>
+            <div class="wf-arrow">→</div>
+            <div class="wf-step done">4. Model Training</div>
+            <div class="wf-arrow">→</div>
+            <div class="wf-step done">5. Evaluation</div>
+            <div class="wf-arrow">→</div>
+            <div class="wf-step done">6. Alert Gen.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="../static/js/app.js"></script>
+</body>
+</html>
