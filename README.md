@@ -11,7 +11,10 @@ pinned: false
 
 [![Live Demo on Hugging Face](https://img.shields.io/badge/Live%20Demo-Hugging%20Face-blue?style=for-the-badge&logo=huggingface)](https://huggingface.co/spaces/reshmirajs/sentinelnet)
 
-🌐 **Live Deployment:** [https://huggingface.co/spaces/reshmirajs/sentinelnet](https://huggingface.co/spaces/reshmirajs/sentinelnet)
+🎨 **Frontend Dashboard Link:** [https://huggingface.co/spaces/reshmirajs/sentinelnet](https://huggingface.co/spaces/reshmirajs/sentinelnet)  
+⚙️ **Backend API Link:** [https://huggingface.co/spaces/reshmirajs/sentinelnet/api/live_data](https://huggingface.co/spaces/reshmirajs/sentinelnet/api/live_data)
+
+> *Note: SentinelNet is built as a unified full-stack NIDS application. The Flask server handles both serving the frontend SPA (Single Page Application) dashboard and processing raw backend ML predictions via its `/api/` endpoints on the same robust host.*
 
 ## Overview
 
