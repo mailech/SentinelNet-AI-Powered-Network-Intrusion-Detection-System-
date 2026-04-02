@@ -1,4 +1,6 @@
 .ipynb_checkpoints/
 __pycache__/
-*.pkl
-data/
+
+# Do not ignore data and models needed for deployment
+!notebooks/models/*.pkl
+!notebooks/data/

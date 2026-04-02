@@ -1,129 +1,244 @@
+---
+title: SentinelNet IDS
+emoji: 🛡️
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+pinned: false
+---
+
 # SentinelNet: AI-Powered Network Intrusion Detection System
 
 ## Overview
 
-SentinelNet is a machine learning-based network intrusion detection system built using the NSL-KDD dataset. The project focuses on identifying malicious network activity by combining data preprocessing, feature engineering, supervised learning, and anomaly detection techniques.
+SentinelNet is an end-to-end machine learning-based Network Intrusion Detection System (NIDS) designed to identify malicious network traffic in real time. The system combines supervised learning, anomaly detection techniques, and a live simulation engine to classify network connections as normal or attack traffic.
 
-The goal is to develop a reliable pipeline that can distinguish between normal and attack traffic while maintaining strong generalization performance.
-
----
-
-## Project Workflow
-
-The project is structured into sequential stages:
-
-1. **Data Exploration**
-   - Understanding dataset structure and feature behavior
-   - Identifying class imbalance and feature distributions
-
-2. **Data Preprocessing**
-   - Handling categorical and numerical features
-   - Encoding and scaling using a preprocessing pipeline
-   - Addressing class imbalance using SMOTE
-
-3. **Feature Engineering & Selection**
-   - Generating and selecting important features
-   - Removing redundant and low-importance features
-   - Improving data representation for modeling
-
-4. **Model Training & Evaluation**
-   - Training multiple machine learning models
-   - Evaluating performance using accuracy, precision, recall, and F1 score
-   - Comparing models to select the best performer
-
-5. **Anomaly Detection**
-   - Applying unsupervised methods such as K-Means, Isolation Forest, LOF, and One-Class SVM
-   - Identifying unusual network behavior patterns
-
-6. **Model Tuning & Validation**
-   - Optimizing model performance using GridSearchCV
-   - Validating model stability using cross-validation
-   - Evaluating performance using ROC curves and confusion matrices
+The project goes beyond traditional model development by integrating a fully functional web application, real-time alert generation, and an interactive monitoring dashboard.
 
 ---
 
+## Key Features
 
-## Repository Structure
+* Real-time network traffic simulation using NSL-KDD dataset
+* Machine learning-based intrusion detection (Random Forest)
+* Live alert generation with severity classification
+* Interactive dashboard with real-time charts and metrics
+* File upload system for batch traffic analysis
+* Manual connection analyzer for single predictions
+* Simulated firewall system for IP quarantine
+* REST API-based backend using Flask
+
+---
+
+## Dataset
+
+The project uses the NSL-KDD dataset, a benchmark dataset for intrusion detection systems.
+
+* Training Records: 125,973
+* Test Records: 22,544
+* Features: 41 per network connection
+
+Each record represents a network connection with attributes such as protocol type, service, byte counts, and traffic statistics.
+
+---
+
+## Machine Learning Pipeline
+
+### 1. Data Exploration
+
+* Understanding feature distributions and class imbalance
+* Visualizing categorical and numerical features
+
+### 2. Data Preprocessing
+
+* One-hot encoding for categorical features
+* Standard scaling for numerical features
+* SMOTE applied only on training data to handle imbalance
+* Pipeline built using ColumnTransformer
+
+### 3. Feature Engineering & Selection
+
+* Feature importance using Random Forest
+* Removal of low-importance and redundant features
+
+### 4. Model Training & Evaluation
+
+Models tested:
+
+* Logistic Regression
+* Decision Tree
+* Random Forest (selected)
+
+Evaluation metrics:
+
+* Accuracy
+* Precision
+* Recall
+* F1-score
+
+### 5. Model Tuning
+
+* Hyperparameter optimization using GridSearchCV
+* Cross-validation for stability
+* ROC-AUC evaluation
+
+### 6. Anomaly Detection
+
+Unsupervised techniques explored:
+
+* K-Means
+* Isolation Forest
+* Local Outlier Factor (LOF)
+* One-Class SVM
+
+---
+
+## Final Model Performance
+
+* Accuracy: 99.2%
+* Precision: 99.4%
+* Recall: 99.1%
+* F1-Score: 99.2%
+* ROC-AUC: 99.7%
+
+---
+
+## Real-Time Intrusion Detection (Week 7)
+
+The system simulates live network traffic and performs real-time predictions using the trained model.
+
+### Features:
+
+* Continuous packet simulation using test dataset
+* Predictions executed every 2 seconds
+* Dynamic dashboard updates
+* Real-time alert generation
+* Intrusion logging
+
+---
+
+## Alert Generation & Severity Classification
+
+Each detected intrusion is assigned a severity level based on model confidence:
+
+* Critical → Probability > 0.90
+* High → Probability > 0.75
+* Medium → Probability > 0.50
+* Low → Otherwise
+
+Each alert includes:
+
+* Timestamp
+* Source IP and Destination IP
+* Protocol and Service
+* Attack Type (DoS, Probe, R2L, U2R)
+* Confidence Score
+* Severity Level
+
+Alerts are stored in a CSV log file for further analysis.
+
+---
+
+## Web Application
+
+The system includes a Flask-based web application with a Single Page Application (SPA) frontend.
+
+### Dashboard Features:
+
+* Real-time traffic statistics
+* Live packet and attack charts
+* Attack type and protocol distribution
+* Live intrusion alerts table
+
+### Functional Modules:
+
+* File Upload: Analyze bulk traffic data (CSV/TXT)
+* Single Analyzer: Predict individual connections
+* Live Alerts: Monitor ongoing threats
+* Quarantine System: Block malicious IPs
+
+---
+
+## API Endpoints
+
+* GET /api/live_data → Live traffic statistics and alerts
+* POST /api/predict → Predict single network connection
+* POST /api/upload → Batch file prediction
+* GET /api/metrics → Model performance metrics
+* POST /api/quarantine → Block malicious IP
+* POST /api/sim/toggle → Start/Stop simulation
+
+---
+
+## System Architecture
+
+1. NSL-KDD Dataset
+2. Preprocessing (Encoding + Scaling)
+3. Random Forest Model (Tuned)
+4. Flask Backend
+5. Real-Time Simulation Engine
+6. Alert Generation System
+7. Dashboard UI
+
+---
+
+## Project Structure
+
 SentinelNet/
-│
+├── app.py
+├── templates/
+│   └── index.html
+├── static/
+│   ├── main.js
+│   └── style.css
 ├── notebooks/
-│ ├── 01_data_exploration.ipynb
-│ ├── 02_preprocessing.ipynb
-│ ├── 03_feature_engineering.ipynb
-│ ├── 04_model_training_and_evaluation.ipynb
-│ ├── 05_anomaly_detection.ipynb
-│ ├── 06_model_evaluation_and_tuning.ipynb
-│
-├── data/
-│
-├── models/
-│ └── preprocessor.pkl
-│
+│   ├── 01_dataset_acquisition_and_eda.ipynb
+│   ├── 02_data_preprocessing.ipynb
+│   ├── 03_feature_engineering_and_selection.ipynb
+│   ├── 04_model_training_and_evaluation.ipynb
+│   ├── 05_anomaly_detection.ipynb
+│   ├── 06_model_evaluation_and_tuning.ipynb
+│   ├── 07_alert_generation_and_logging.ipynb
+│   ├── models/
+│   │   ├── best_model.pkl
+│   │   └── preprocessor.pkl
+│   └── data/
+├── logs/
+│   └── intrusion_alerts.csv
 ├── reports/
-│ ├── milestone_1.txt
-│ ├── milestone_2.txt
-│ ├── milestone_3.txt
-│
 ├── README.md
-├── weekly_progress_summary.txt
-
 
 ---
 
-## Key Techniques Used
+## Installation & Setup
 
-- Data preprocessing using `ColumnTransformer`
-- Feature selection using Random Forest importance
-- Class imbalance handling using SMOTE
-- Supervised models:
-  - Logistic Regression
-  - Decision Tree
-  - Random Forest
-  - Gradient Boosting
-- Unsupervised anomaly detection:
-  - K-Means
-  - Isolation Forest
-  - Local Outlier Factor
-  - One-Class SVM
-- Model evaluation:
-  - Classification report
-  - Confusion matrix
-  - ROC-AUC
-  - Cross-validation
+1. Install dependencies:
+
+pip install flask pandas numpy scikit-learn joblib
+
+2. Run the application:
+
+python app.py
+
+3. Open in browser:
+
+http://127.0.0.1:5050
 
 ---
 
-## Web Application & Live Dashboard
+## Key Achievements
 
-SentinelNet features a fully functional, production-ready web application built with **Flask** and **Vanilla JavaScript** (acting as a Single Page Application). 
-
-### Key Dashboard Features:
-- **Real-Time Traffic Simulator:** A multi-threaded backend engine continuously streams packets from the NSL-KDD test set, mimicking real-world network loads.
-- **Live Telemetry Charts:** Instantaneous rendering of packet volume and attack spikes via Chart.js, seamlessly updating without page reloads.
-- **Active Incident Quarantine:** Found an intrusion? Click "Block IP" in the Live Alerts feed. The backend actively halts subsequent traffic from that source, incrementing a real-time "Blocked by IDS" metric.
-- **Start/Stop Controls:** Pause and resume the incoming network evaluation simulation dynamically.
-- **File Scanner & Manual Analyzer:** Upload full `.csv`/`.txt` traffic dumps for immediate batch analysis, or drop individual connection stats into the single-record analyzer.
-- **Model Details:** Native UI routes detailing the ML pipeline's accuracy, F1-Scores, and Random Forest feature metrics.
-
----
-
-## Results
-
-- Random Forest achieved strong performance after tuning.
-- Feature engineering significantly improved model effectiveness.
-- Anomaly detection methods provided additional insights into unusual traffic patterns.
-- Cross-validation confirmed model stability and generalization capability.
+* Built a complete end-to-end intrusion detection pipeline
+* Achieved high accuracy (~99%) using Random Forest
+* Implemented real-time traffic simulation engine
+* Developed an interactive monitoring dashboard
+* Designed severity-based alert classification
+* Implemented simulated firewall (IP quarantine system)
 
 ---
 
 ## Conclusion
 
-This project demonstrates a complete machine learning pipeline for network intrusion detection. By combining supervised and unsupervised techniques, the system is able to effectively detect malicious activity while maintaining robust performance.
+SentinelNet demonstrates a production-style implementation of a Network Intrusion Detection System by combining machine learning, real-time processing, and interactive visualization. The system is capable of detecting malicious traffic efficiently while providing actionable insights through alerts and monitoring tools.
 
 ---
-
-## Notes
-
-- The dataset used is NSL-KDD.
-- SMOTE was applied only on training data to avoid data leakage.
-- Some computationally intensive methods were applied on sampled data for efficiency.
