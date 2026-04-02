@@ -24,4 +24,4 @@ EXPOSE 5050
 
 # Run the application with Gunicorn binding to Render's PORT
 # using 1 worker to keep the simulation state consistent
-CMD gunicorn -b 0.0.0.0:${PORT:-5050} -w 1 --threads 4 app:app
+CMD gunicorn -b 0.0.0.0:${PORT:-5050} --worker-class gthread -w 1 --threads 4 --timeout 120 app:app

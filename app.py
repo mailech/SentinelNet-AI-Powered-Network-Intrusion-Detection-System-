@@ -68,71 +68,117 @@ traffic_stats = {
     "blocked": 0
 }
 
+# Synthetic fallback constants (used when model/data files are unavailable)
+_SYNTH_ATTACK_TYPES = ["DoS", "Probe", "R2L", "U2R"]
+_SYNTH_PROTOCOLS    = ["tcp", "udp", "icmp"]
+_SYNTH_SERVICES     = ["http", "ftp", "smtp", "ssh", "dns", "private", "telnet"]
+
 def simulate_realtime_traffic():
-    """Background thread to process traffic continuously."""
+    """Background thread to process traffic continuously.
+    Falls back to synthetic data if real KDD data files are unavailable.
+    """
     print("🚀 Starting real-time traffic simulation...")
+    df_test = None
     try:
         df_test = pd.read_csv(TEST_PATH, names=COLUMNS)
+        print("✅ Simulation using real KDD test data.")
     except Exception as e:
-        print(f"⚠️ Simulation could not load test data: {e}")
-        return
-        
+        print(f"⚠️ Test data not found ({e}). Running in SYNTHETIC mode — dashboard will still update.")
+
     while SIMULATION_ACTIVE:
-        time.sleep(2.0) # Update every 2 seconds
-        
+        time.sleep(2.0)  # Update every 2 seconds
+
         if simulation_status == "paused":
             continue
-            
+
+        now_str = datetime.now().strftime("%H:%M:%S")
+
         # Simulate persistent attacks being firewalled off
         if quarantined_ips:
             for _ in quarantined_ips:
                 dropped = random.randint(3, 15)
                 traffic_stats["blocked"] += dropped
                 traffic_stats["total"] += dropped
-                
-        # Take a random batch of packets
-        batch_size = random.randint(15, 60)
-        sample = df_test.sample(n=batch_size)
-        
-        preds, probas = predict_dataframe(sample)
-        attacks_in_batch = 0
-        now_str = datetime.now().strftime("%H:%M:%S")
-        
-        for i, (idx, row) in enumerate(sample.iterrows()):
-            src_ip = f"192.168.{random.randint(1,10)}.{random.randint(1,254)}"
-            
-            # Simulated Firewall / Quarantine check
-            if src_ip in quarantined_ips:
-                traffic_stats["blocked"] += 1
-                continue
-                
-            traffic_stats["total"] += 1
-            
-            p = str(row["protocol_type"])
-            traffic_stats["protocols"][p] = traffic_stats["protocols"].get(p, 0) + 1
-            
-            if preds[i] == 1:
-                traffic_stats["attack"] += 1
-                attacks_in_batch += 1
-                
-                t = classify_attack(row["class"])
-                traffic_stats["attack_types"][t] = traffic_stats["attack_types"].get(t, 0) + 1
-                
-                prob = float(probas[i])
-                live_alerts.appendleft({
-                    "id": traffic_stats["total"],
-                    "timestamp": now_str,
-                    "src_ip": src_ip,
-                    "dst_ip": f"10.0.{random.randint(0,5)}.{random.randint(1,50)}",
-                    "protocol": p.upper(),
-                    "service": str(row["service"]),
-                    "actual": t,
-                    "confidence": round(prob * 100, 1),
-                    "severity": get_severity(prob),
-                })
-            else:
-                traffic_stats["normal"] += 1
-                
+
+        # ── Mode A: Real model + real data ──────────────────────────────────
+        if df_test is not None and pipeline is not None:
+            batch_size = random.randint(15, 60)
+            sample = df_test.sample(n=batch_size)
+            preds, probas = predict_dataframe(sample)
+            attacks_in_batch = 0
+
+            for i, (idx, row) in enumerate(sample.iterrows()):
+                src_ip = f"192.168.{random.randint(1,10)}.{random.randint(1,254)}"
+
+                if src_ip in quarantined_ips:
+                    traffic_stats["blocked"] += 1
+                    continue
+
+                traffic_stats["total"] += 1
+                p = str(row["protocol_type"])
+                traffic_stats["protocols"][p] = traffic_stats["protocols"].get(p, 0) + 1
+
+                if preds[i] == 1:
+                    traffic_stats["attack"] += 1
+                    attacks_in_batch += 1
+                    t = classify_attack(row["class"])
+                    traffic_stats["attack_types"][t] = traffic_stats["attack_types"].get(t, 0) + 1
+                    prob = float(probas[i])
+                    live_alerts.appendleft({
+                        "id": traffic_stats["total"],
+                        "timestamp": now_str,
+                        "src_ip": src_ip,
+                        "dst_ip": f"10.0.{random.randint(0,5)}.{random.randint(1,50)}",
+                        "protocol": p.upper(),
+                        "service": str(row["service"]),
+                        "actual": t,
+                        "confidence": round(prob * 100, 1),
+                        "severity": get_severity(prob),
+                    })
+                else:
+                    traffic_stats["normal"] += 1
+
+        # ── Mode B: Synthetic fallback (no model/data needed) ────────────────
+        else:
+            batch_size = random.randint(20, 55)
+            attacks_in_batch = 0
+
+            for _ in range(batch_size):
+                src_ip = f"192.168.{random.randint(1,10)}.{random.randint(1,254)}"
+
+                if src_ip in quarantined_ips:
+                    traffic_stats["blocked"] += 1
+                    continue
+
+                traffic_stats["total"] += 1
+                p = random.choice(_SYNTH_PROTOCOLS)
+                traffic_stats["protocols"][p] = traffic_stats["protocols"].get(p, 0) + 1
+
+                # ~28% attack rate for realistic-looking simulation
+                is_attack = random.random() < 0.28
+                if is_attack:
+                    traffic_stats["attack"] += 1
+                    attacks_in_batch += 1
+                    t = random.choices(
+                        _SYNTH_ATTACK_TYPES,
+                        weights=[0.55, 0.25, 0.12, 0.08]  # DoS most common
+                    )[0]
+                    traffic_stats["attack_types"][t] = traffic_stats["attack_types"].get(t, 0) + 1
+                    prob = random.uniform(0.55, 0.99)
+                    live_alerts.appendleft({
+                        "id": traffic_stats["total"],
+                        "timestamp": now_str,
+                        "src_ip": src_ip,
+                        "dst_ip": f"10.0.{random.randint(0,5)}.{random.randint(1,50)}",
+                        "protocol": p.upper(),
+                        "service": random.choice(_SYNTH_SERVICES),
+                        "actual": t,
+                        "confidence": round(prob * 100, 1),
+                        "severity": get_severity(prob),
+                    })
+                else:
+                    traffic_stats["normal"] += 1
+
         live_timeseries.append({
             "timestamp": now_str,
             "total": batch_size,
@@ -149,20 +195,20 @@ def load_all():
     global pipeline, df_train, load_error_message
     try:
         pipeline = joblib.load(PIPELINE_PATH)
-        
         df_train = pd.read_csv(TRAIN_PATH, names=COLUMNS)
         df_train["binary_class"] = df_train["class"].apply(lambda x: 0 if x.strip()=="normal" else 1)
-
-        # Rebuild preprocessor at runtime — avoids Python version pickle incompatibility
-      
-        print("✅ Pipeline loaded.")
-        # Start the simulation thread
-        t = threading.Thread(target=simulate_realtime_traffic, daemon=True)
-        t.start()
+        print("✅ Pipeline and training data loaded.")
     except Exception as e:
         import traceback
         load_error_message = traceback.format_exc()
-        print(f"⚠️  Load error: {e}")
+        print(f"⚠️  Load error (will use synthetic simulation): {e}")
+    finally:
+        # ALWAYS start the simulation thread — even if model/data failed to load.
+        # The thread itself handles the fallback to synthetic mode.
+        t = threading.Thread(target=simulate_realtime_traffic, daemon=True)
+        t.daemon = True
+        t.start()
+        print("✅ Simulation thread started.")
 
 load_all()
 
