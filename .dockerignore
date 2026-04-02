@@ -1,0 +1,17 @@
+.git/
+.github/
+.gitignore
+.gitattributes
+reports/
+notebooks/
+!notebooks/models/final_pipeline.pkl
+!notebooks/data/KDDTest+.txt
+!notebooks/data/KDDTrain+.txt
+data/
+README.md
+__pycache__/
+*.txt
+!requirements.txt
+*.md
+.ipynb_checkpoints/
+debug.json
