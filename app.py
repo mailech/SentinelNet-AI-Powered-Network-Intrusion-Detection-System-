@@ -15,6 +15,8 @@ import joblib
 import numpy as np
 import pandas as pd
 from flask import Flask, render_template, jsonify, request
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  # 50 MB upload limit
@@ -43,9 +45,11 @@ U2R_ATTACKS    = {"buffer_overflow","loadmodule","rootkit","perl","sqlattack","x
 
 BASE          = os.path.dirname(__file__)
 MODEL_PATH    = os.path.join(BASE, "notebooks", "models", "best_model.pkl")
-PREPROC_PATH  = os.path.join(BASE, "notebooks", "models", "preprocessor.pkl")
 TRAIN_PATH    = os.path.join(BASE, "notebooks", "data", "KDDTrain+.txt")
 TEST_PATH     = os.path.join(BASE, "notebooks", "data", "KDDTest+.txt")
+
+CATEGORICAL_COLS = ["protocol_type", "service", "flag"]
+NUMERICAL_COLS   = [c for c in FEATURE_COLS if c not in CATEGORICAL_COLS]
 
 # ── Real-Time Simulation State ─────────────────────────────────────────────
 SIMULATION_ACTIVE = True
@@ -139,15 +143,29 @@ def simulate_realtime_traffic():
 model, preprocessor, df_train = None, None, None
 load_error_message = None
 
+def build_preprocessor(df_train_features: pd.DataFrame):
+    """Rebuild the ColumnTransformer from scratch to avoid pickle version issues."""
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("num", StandardScaler(), NUMERICAL_COLS),
+            ("cat", OneHotEncoder(handle_unknown="ignore"), CATEGORICAL_COLS),
+        ]
+    )
+    preprocessor.fit(df_train_features[FEATURE_COLS])
+    return preprocessor
+
 def load_all():
     global model, preprocessor, df_train, load_error_message
     try:
-        model        = joblib.load(MODEL_PATH)
-        preprocessor = joblib.load(PREPROC_PATH)
-        df_train     = pd.read_csv(TRAIN_PATH, names=COLUMNS)
+        model    = joblib.load(MODEL_PATH)
+        df_train = pd.read_csv(TRAIN_PATH, names=COLUMNS)
         df_train["binary_class"] = df_train["class"].apply(lambda x: 0 if x.strip()=="normal" else 1)
+
+        # Rebuild preprocessor at runtime — avoids Python version pickle incompatibility
+        print("⚙️  Building preprocessor from training data...")
+        preprocessor = build_preprocessor(df_train)
         print("✅ Resources loaded.")
-        
+
         # Start the simulation thread
         t = threading.Thread(target=simulate_realtime_traffic, daemon=True)
         t.start()

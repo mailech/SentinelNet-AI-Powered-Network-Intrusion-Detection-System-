@@ -19,9 +19,9 @@ COPY --chown=user . /app
 # Switch back to the non-root user
 USER user
 
-# Expose the port Hugging Face Spaces uses by default
-EXPOSE 7860
+# Expose the port (Render handles this dynamically)
+EXPOSE 5050
 
-# Run the application with Gunicorn binding to port 7860
+# Run the application with Gunicorn binding to Render's PORT
 # using 1 worker to keep the simulation state consistent
-CMD ["gunicorn", "-b", "0.0.0.0:7860", "-w", "1", "--threads", "4", "app:app"]
+CMD gunicorn -b 0.0.0.0:${PORT:-5050} -w 1 --threads 4 app:app
