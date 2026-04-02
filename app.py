@@ -44,7 +44,7 @@ R2L_ATTACKS    = {"guess_passwd","ftp_write","imap","phf","multihop","warezmaste
 U2R_ATTACKS    = {"buffer_overflow","loadmodule","rootkit","perl","sqlattack","xterm","ps"}
 
 BASE          = os.path.dirname(__file__)
-MODEL_PATH    = os.path.join(BASE, "notebooks", "models", "best_model.pkl")
+PIPELINE_PATH = os.path.join(BASE, "notebooks", "models", "final_pipeline.pkl")
 TRAIN_PATH    = os.path.join(BASE, "notebooks", "data", "KDDTrain+.txt")
 TEST_PATH     = os.path.join(BASE, "notebooks", "data", "KDDTest+.txt")
 
@@ -140,32 +140,22 @@ def simulate_realtime_traffic():
         })
 
 # ── Load artifacts once ────────────────────────────────────────────────────
-model, preprocessor, df_train = None, None, None
+pipeline, df_train = None, None
 load_error_message = None
 
-def build_preprocessor(df_train_features: pd.DataFrame):
-    """Rebuild the ColumnTransformer from scratch to avoid pickle version issues."""
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ("num", StandardScaler(), NUMERICAL_COLS),
-            ("cat", OneHotEncoder(handle_unknown="ignore"), CATEGORICAL_COLS),
-        ]
-    )
-    preprocessor.fit(df_train_features[FEATURE_COLS])
-    return preprocessor
+
 
 def load_all():
-    global model, preprocessor, df_train, load_error_message
+    global pipeline, df_train, load_error_message
     try:
-        model    = joblib.load(MODEL_PATH)
+        pipeline = joblib.load(PIPELINE_PATH)
+        
         df_train = pd.read_csv(TRAIN_PATH, names=COLUMNS)
         df_train["binary_class"] = df_train["class"].apply(lambda x: 0 if x.strip()=="normal" else 1)
 
         # Rebuild preprocessor at runtime — avoids Python version pickle incompatibility
-        print("⚙️  Building preprocessor from training data...")
-        preprocessor = build_preprocessor(df_train)
-        print("✅ Resources loaded.")
-
+      
+        print("✅ Pipeline loaded.")
         # Start the simulation thread
         t = threading.Thread(target=simulate_realtime_traffic, daemon=True)
         t.start()
@@ -192,11 +182,9 @@ def classify_attack(label: str) -> str:
     if l in U2R_ATTACKS:           return "U2R"
     return "Attack"
 
-def predict_dataframe(df: pd.DataFrame):
-    """Run model on a dataframe that has exactly FEATURE_COLS columns."""
-    X_proc  = preprocessor.transform(df[FEATURE_COLS])
-    preds   = model.predict(X_proc)
-    probas  = model.predict_proba(X_proc)[:, 1]
+def predict_dataframe(df):
+    preds = pipeline.predict(df[FEATURE_COLS])
+    probas = pipeline.predict_proba(df[FEATURE_COLS])[:, 1]
     return preds, probas
 
 # ── Pages ──────────────────────────────────────────────────────────────────
@@ -269,7 +257,7 @@ def api_metrics():
 # ── API: sample alerts from test set ──────────────────────────────────────
 @app.route("/api/sample_alerts")
 def api_sample_alerts():
-    if model is None or preprocessor is None:
+    if pipeline is None:
         return jsonify([])
     try:
         df = pd.read_csv(TEST_PATH, names=COLUMNS)
@@ -300,7 +288,7 @@ def api_sample_alerts():
 # ── API: single-connection predict ─────────────────────────────────────────
 @app.route("/api/predict", methods=["POST"])
 def api_predict():
-    if model is None or preprocessor is None:
+    if pipeline is None:
         return jsonify(error="Model not loaded"), 503
     data = request.get_json(force=True)
     try:
@@ -319,7 +307,7 @@ def api_predict():
 # ── API: file upload & batch predict ──────────────────────────────────────
 @app.route("/api/upload", methods=["POST"])
 def api_upload():
-    if model is None or preprocessor is None:
+    if pipeline is None:
         return jsonify(error="Model not loaded"), 503
 
     file = request.files.get("file")
