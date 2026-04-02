@@ -340,8 +340,8 @@ def api_reset():
     return jsonify({'status': 'reset'})
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 10000))
     print(f"🛡️  Starting SentinelNet NIDS on port {port}…")
     print(f"   Model: {'Loaded ✅' if model else 'Heuristic mode ⚠'}")
     print(f"   Data:  {len(X_test_raw) if X_test_raw is not None else 0} packets")
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port)
