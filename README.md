@@ -9,6 +9,10 @@ pinned: false
 
 # SentinelNet: AI-Powered Network Intrusion Detection System
 
+[![Live Demo on Hugging Face](https://img.shields.io/badge/Live%20Demo-Hugging%20Face-blue?style=for-the-badge&logo=huggingface)](https://huggingface.co/spaces/reshmirajs/sentinelnet)
+
+🌐 **Live Deployment:** [https://huggingface.co/spaces/reshmirajs/sentinelnet](https://huggingface.co/spaces/reshmirajs/sentinelnet)
+
 ## Overview
 
 SentinelNet is an end-to-end machine learning-based Network Intrusion Detection System (NIDS) designed to identify malicious network traffic in real time. The system combines supervised learning, anomaly detection techniques, and a live simulation engine to classify network connections as normal or attack traffic.
