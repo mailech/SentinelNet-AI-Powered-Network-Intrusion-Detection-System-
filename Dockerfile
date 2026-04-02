@@ -1,5 +1,4 @@
-# Use an official Python runtime as a parent image
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 # Create a non-root user (Hugging Face Spaces require this for security)
 RUN useradd -m -u 1000 user
