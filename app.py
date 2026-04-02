@@ -423,6 +423,10 @@ def api_upload():
         )
     except Exception as e:
         return jsonify(error=f"Processing failed: {str(e)}"), 500
-
+@app.before_first_request
+def start_system():
+    load_all()
+    
 if __name__ == "__main__":
     app.run(debug=True, port=5050)
+    
