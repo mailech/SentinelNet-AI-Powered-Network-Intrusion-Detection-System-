@@ -88,102 +88,111 @@ def simulate_realtime_traffic():
     while SIMULATION_ACTIVE:
         time.sleep(2.0)  # Update every 2 seconds
 
-        if simulation_status == "paused":
-            continue
+        try:
+            if simulation_status == "paused":
+                continue
 
-        now_str = datetime.now().strftime("%H:%M:%S")
+            now_str = datetime.now().strftime("%H:%M:%S")
 
-        # Simulate persistent attacks being firewalled off
-        if quarantined_ips:
-            for _ in quarantined_ips:
-                dropped = random.randint(3, 15)
-                traffic_stats["blocked"] += dropped
-                traffic_stats["total"] += dropped
+            # Simulate persistent attacks being firewalled off
+            # Copy to list to avoid RuntimeError if modified by API thread
+            current_quarantined = list(quarantined_ips)
+            if current_quarantined:
+                for _ in current_quarantined:
+                    dropped = random.randint(3, 15)
+                    traffic_stats["blocked"] += dropped
+                    traffic_stats["total"] += dropped
 
-        # ── Mode A: Real model + real data ──────────────────────────────────
-        if df_test is not None and pipeline is not None:
-            batch_size = random.randint(15, 60)
-            sample = df_test.sample(n=batch_size)
-            preds, probas = predict_dataframe(sample)
-            attacks_in_batch = 0
+            # ── Mode A: Real model + real data ──────────────────────────────────
+            if df_test is not None and pipeline is not None and len(df_test) > 0:
+                batch_size = random.randint(15, 60)
+                # Ensure we don't sample more than available
+                batch_size = min(batch_size, len(df_test))
+                sample = df_test.sample(n=batch_size)
+                preds, probas = predict_dataframe(sample)
+                attacks_in_batch = 0
 
-            for i, (idx, row) in enumerate(sample.iterrows()):
-                src_ip = f"192.168.{random.randint(1,10)}.{random.randint(1,254)}"
+                for i, (idx, row) in enumerate(sample.iterrows()):
+                    src_ip = f"192.168.{random.randint(1,10)}.{random.randint(1,254)}"
 
-                if src_ip in quarantined_ips:
-                    traffic_stats["blocked"] += 1
-                    continue
+                    if src_ip in current_quarantined:
+                        traffic_stats["blocked"] += 1
+                        continue
 
-                traffic_stats["total"] += 1
-                p = str(row["protocol_type"])
-                traffic_stats["protocols"][p] = traffic_stats["protocols"].get(p, 0) + 1
+                    traffic_stats["total"] += 1
+                    p = str(row["protocol_type"])
+                    traffic_stats["protocols"][p] = traffic_stats["protocols"].get(p, 0) + 1
 
-                if preds[i] == 1:
-                    traffic_stats["attack"] += 1
-                    attacks_in_batch += 1
-                    t = classify_attack(row["class"])
-                    traffic_stats["attack_types"][t] = traffic_stats["attack_types"].get(t, 0) + 1
-                    prob = float(probas[i])
-                    live_alerts.appendleft({
-                        "id": traffic_stats["total"],
-                        "timestamp": now_str,
-                        "src_ip": src_ip,
-                        "dst_ip": f"10.0.{random.randint(0,5)}.{random.randint(1,50)}",
-                        "protocol": p.upper(),
-                        "service": str(row["service"]),
-                        "actual": t,
-                        "confidence": round(prob * 100, 1),
-                        "severity": get_severity(prob),
-                    })
-                else:
-                    traffic_stats["normal"] += 1
+                    if preds[i] == 1:
+                        traffic_stats["attack"] += 1
+                        attacks_in_batch += 1
+                        t = classify_attack(row.get("class", "Attack"))
+                        traffic_stats["attack_types"][t] = traffic_stats["attack_types"].get(t, 0) + 1
+                        prob = float(probas[i])
+                        live_alerts.appendleft({
+                            "id": traffic_stats["total"],
+                            "timestamp": now_str,
+                            "src_ip": src_ip,
+                            "dst_ip": f"10.0.{random.randint(0,5)}.{random.randint(1,50)}",
+                            "protocol": p.upper(),
+                            "service": str(row.get("service", "unknown")),
+                            "actual": t,
+                            "confidence": round(prob * 100, 1),
+                            "severity": get_severity(prob),
+                        })
+                    else:
+                        traffic_stats["normal"] += 1
 
-        # ── Mode B: Synthetic fallback (no model/data needed) ────────────────
-        else:
-            batch_size = random.randint(20, 55)
-            attacks_in_batch = 0
+            # ── Mode B: Synthetic fallback (no model/data needed) ────────────────
+            else:
+                batch_size = random.randint(20, 55)
+                attacks_in_batch = 0
 
-            for _ in range(batch_size):
-                src_ip = f"192.168.{random.randint(1,10)}.{random.randint(1,254)}"
+                for _ in range(batch_size):
+                    src_ip = f"192.168.{random.randint(1,10)}.{random.randint(1,254)}"
 
-                if src_ip in quarantined_ips:
-                    traffic_stats["blocked"] += 1
-                    continue
+                    if src_ip in current_quarantined:
+                        traffic_stats["blocked"] += 1
+                        continue
 
-                traffic_stats["total"] += 1
-                p = random.choice(_SYNTH_PROTOCOLS)
-                traffic_stats["protocols"][p] = traffic_stats["protocols"].get(p, 0) + 1
+                    traffic_stats["total"] += 1
+                    p = random.choice(_SYNTH_PROTOCOLS)
+                    traffic_stats["protocols"][p] = traffic_stats["protocols"].get(p, 0) + 1
 
-                # ~28% attack rate for realistic-looking simulation
-                is_attack = random.random() < 0.28
-                if is_attack:
-                    traffic_stats["attack"] += 1
-                    attacks_in_batch += 1
-                    t = random.choices(
-                        _SYNTH_ATTACK_TYPES,
-                        weights=[0.55, 0.25, 0.12, 0.08]  # DoS most common
-                    )[0]
-                    traffic_stats["attack_types"][t] = traffic_stats["attack_types"].get(t, 0) + 1
-                    prob = random.uniform(0.55, 0.99)
-                    live_alerts.appendleft({
-                        "id": traffic_stats["total"],
-                        "timestamp": now_str,
-                        "src_ip": src_ip,
-                        "dst_ip": f"10.0.{random.randint(0,5)}.{random.randint(1,50)}",
-                        "protocol": p.upper(),
-                        "service": random.choice(_SYNTH_SERVICES),
-                        "actual": t,
-                        "confidence": round(prob * 100, 1),
-                        "severity": get_severity(prob),
-                    })
-                else:
-                    traffic_stats["normal"] += 1
+                    # ~28% attack rate for realistic-looking simulation
+                    is_attack = random.random() < 0.28
+                    if is_attack:
+                        traffic_stats["attack"] += 1
+                        attacks_in_batch += 1
+                        t = random.choices(
+                            _SYNTH_ATTACK_TYPES,
+                            weights=[0.55, 0.25, 0.12, 0.08]  # DoS most common
+                        )[0]
+                        traffic_stats["attack_types"][t] = traffic_stats["attack_types"].get(t, 0) + 1
+                        prob = random.uniform(0.55, 0.99)
+                        live_alerts.appendleft({
+                            "id": traffic_stats["total"],
+                            "timestamp": now_str,
+                            "src_ip": src_ip,
+                            "dst_ip": f"10.0.{random.randint(0,5)}.{random.randint(1,50)}",
+                            "protocol": p.upper(),
+                            "service": random.choice(_SYNTH_SERVICES),
+                            "actual": t,
+                            "confidence": round(prob * 100, 1),
+                            "severity": get_severity(prob),
+                        })
+                    else:
+                        traffic_stats["normal"] += 1
 
-        live_timeseries.append({
-            "timestamp": now_str,
-            "total": batch_size,
-            "attacks": attacks_in_batch
-        })
+            live_timeseries.append({
+                "timestamp": now_str,
+                "total": batch_size,
+                "attacks": attacks_in_batch
+            })
+
+        except Exception as e:
+            print(f"⚠️ Simulation loop error: {e}")
+
 
 # ── Load artifacts once ────────────────────────────────────────────────────
 pipeline, df_train = None, None
@@ -423,10 +432,7 @@ def api_upload():
         )
     except Exception as e:
         return jsonify(error=f"Processing failed: {str(e)}"), 500
-@app.before_first_request
-def start_system():
-    load_all()
-    
+
 if __name__ == "__main__":
     app.run(debug=True, port=5050)
     
