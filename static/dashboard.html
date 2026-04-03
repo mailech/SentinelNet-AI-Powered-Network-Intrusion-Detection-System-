@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dashboard — SentinelNet</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/dashboard.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+</head>
+<body>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<nav id="navbar">
+  <a class="nav-logo" href="index.html"><div class="nav-dot"></div>SENTINELNET</a>
+  <ul class="nav-links">
+    <li><a href="index.html#pipeline">Pipeline</a></li>
+    <li><a href="index.html#dataset">Dataset</a></li>
+    <li><a href="index.html#results">Results</a></li>
+    <li><a href="dashboard.html" class="active">Dashboard</a></li>
+    <li><a href="demo.html">Live Demo</a></li>
+  </ul>
+</nav>
+
+<div class="page-hdr">
+  <h1>ANALYTICS DASHBOARD</h1>
+  <p>// Interactive EDA + Model Evaluation &nbsp;·&nbsp; NSL-KDD Dataset &nbsp;·&nbsp; 125,973 samples</p>
+</div>
+
+<div id="root"></div>
+
+<script type="text/babel">
+const {useState,useEffect,useRef}=React;
+
+const CYAN='#00d4f5',GREEN='#00f5a0',RED='#f5334a',YELLOW='#f5c842',ORANGE='#f5834a',PURPLE='#a855f7';
+Chart.defaults.color='#3d6880';
+Chart.defaults.font.family="'Share Tech Mono', monospace";
+Chart.defaults.font.size=11;
+
+function ChartCard({id,title,sub,col,children}){
+  const [vis,setVis]=useState(false),ref=useRef();
+  useEffect(()=>{
+    const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){setVis(true);obs.disconnect();}},{threshold:.1});
+    if(ref.current)obs.observe(ref.current);
+    return()=>obs.disconnect();
+  },[]);
+  return(
+    <div ref={ref} className={`card ${col}`}
+      style={{opacity:vis?1:0,transform:vis?'none':'translateY(20px)',transition:'opacity .6s,transform .6s'}}>
+      <div className="card-title">{title}<span className="sub">{sub}</span></div>
+      {children}
+    </div>
+  );
+}
+
+function DonutChart(){
+  const ref=useRef(),chart=useRef();
+  useEffect(()=>{
+    if(chart.current)chart.current.destroy();
+    chart.current=new Chart(ref.current,{
+      type:'doughnut',
+      data:{
+        labels:['Normal','DoS','Probe','R2L','U2R'],
+        datasets:[{data:[67343,45927,11656,995,52],backgroundColor:[CYAN,RED,YELLOW,ORANGE,PURPLE],borderColor:'#080f1a',borderWidth:4,hoverOffset:10}]
+      },
+      options:{animation:{animateRotate:true,duration:1200},plugins:{legend:{position:'bottom',labels:{padding:16,usePointStyle:true,pointStyleWidth:8}}},cutout:'62%'}
+    });
+    return()=>chart.current?.destroy();
+  },[]);
+  return <canvas ref={ref} height={240}/>;
+}
+
+function ProtocolChart(){
+  const ref=useRef(),chart=useRef();
+  useEffect(()=>{
+    if(chart.current)chart.current.destroy();
+    chart.current=new Chart(ref.current,{
+      type:'bar',
+      data:{
+        labels:['TCP','UDP','ICMP'],
+        datasets:[
+          {label:'Normal',data:[55620,7903,3820],backgroundColor:CYAN+'88',borderColor:CYAN,borderWidth:1,borderRadius:3},
+          {label:'Attack',data:[47069,7090,4471],backgroundColor:RED+'88',borderColor:RED,borderWidth:1,borderRadius:3}
+        ]
+      },
+      options:{
+        animation:{duration:1000,easing:'easeOutQuart'},
+        plugins:{legend:{position:'top'}},
+        scales:{x:{grid:{color:'#0d2e4a55'}},y:{grid:{color:'#0d2e4a55'},ticks:{callback:v=>v>=1000?(v/1000)+'K':v}}}
+      }
+    });
+    return()=>chart.current?.destroy();
+  },[]);
+  return <canvas ref={ref} height={240}/>;
+}
+
+function RadarChart(){
+  const ref=useRef(),chart=useRef();
+  useEffect(()=>{
+    if(chart.current)chart.current.destroy();
+    chart.current=new Chart(ref.current,{
+      type:'radar',
+      data:{
+        labels:['Duration','Src Bytes','Dst Bytes','Logged In','Srv Count','Error Rate'],
+        datasets:[
+          {label:'DoS',data:[.05,.72,.28,.12,.91,.15],borderColor:RED,backgroundColor:RED+'22',pointBackgroundColor:RED},
+          {label:'Probe',data:[.22,.44,.35,.08,.65,.42],borderColor:YELLOW,backgroundColor:YELLOW+'22',pointBackgroundColor:YELLOW},
+          {label:'R2L',data:[.55,.31,.68,.78,.18,.33],borderColor:ORANGE,backgroundColor:ORANGE+'22',pointBackgroundColor:ORANGE},
+          {label:'Normal',data:[.38,.52,.71,.85,.42,.06],borderColor:CYAN,backgroundColor:CYAN+'22',pointBackgroundColor:CYAN}
+        ]
+      },
+      options:{
+        animation:{duration:1200},
+        scales:{r:{grid:{color:'#0d2e4a'},angleLines:{color:'#0d2e4a'},pointLabels:{color:'#3d6880',font:{size:10}},ticks:{display:false},min:0,max:1}},
+        plugins:{legend:{position:'bottom',labels:{padding:12,usePointStyle:true}}}
+      }
+    });
+    return()=>chart.current?.destroy();
+  },[]);
+  return <canvas ref={ref} height={240}/>;
+}
+
+function ROCChart(){
+  const ref=useRef(),chart=useRef();
+  useEffect(()=>{
+    if(chart.current)chart.current.destroy();
+    const makeROC=auc=>{const pts=[[0,0]];for(let i=1;i<=100;i++){const x=i/100,y=Math.min(1,auc*(1-Math.pow(1-x,1/(1.5*(1-auc)+.5))));pts.push([x,y]);}pts.push([1,1]);return pts;};
+    chart.current=new Chart(ref.current,{
+      type:'line',
+      data:{datasets:[
+        {label:'Guess',data:[{x:0,y:0},{x:1,y:1}],borderColor:'#3d6880',borderDash:[4,4],pointRadius:0,borderWidth:1},
+        ...[['Normal (1.000)',1.000,CYAN],['DoS (1.000)',1.000,RED],['Probe (.999)',.999,YELLOW],['R2L (.998)',.998,ORANGE],['U2R (.997)',.997,PURPLE]].map(([label,auc,color])=>({
+          label,data:makeROC(auc).map(([x,y])=>({x,y})),borderColor:color,backgroundColor:'transparent',pointRadius:0,borderWidth:2,tension:.4
+        }))
+      ]},
+      options:{
+        animation:{duration:1500,easing:'easeOutQuart'},
+        scales:{x:{type:'linear',min:0,max:1,title:{display:true,text:'False Positive Rate',color:'#3d6880'},grid:{color:'#0d2e4a55'}},y:{min:0,max:1,title:{display:true,text:'True Positive Rate',color:'#3d6880'},grid:{color:'#0d2e4a55'}}},
+        plugins:{legend:{position:'bottom',labels:{padding:10,usePointStyle:true}}}
+      }
+    });
+    return()=>chart.current?.destroy();
+  },[]);
+  return <canvas ref={ref} height={220}/>;
+}
+
+function AttackBar(){
+  const ref=useRef(),chart=useRef();
+  useEffect(()=>{
+    if(chart.current)chart.current.destroy();
+    const labels=['normal','neptune','satan','ipsweep','portsweep','smurf','nmap','back','warezclient','teardrop','pod','guess_passwd','buffer_overflow','land','warezmaster'];
+    const data=[67343,41214,3633,3599,2931,2646,1493,956,892,892,264,53,30,25,20];
+    const colors=[CYAN,RED,RED,RED,YELLOW,RED,YELLOW,RED,ORANGE,RED,RED,ORANGE,PURPLE,RED,ORANGE];
+    chart.current=new Chart(ref.current,{
+      type:'bar',
+      data:{labels,datasets:[{data,backgroundColor:colors.map(c=>c+'bb'),borderColor:colors,borderWidth:1,borderRadius:3}]},
+      options:{
+        animation:{duration:1200,delay:ctx=>ctx.dataIndex*40},
+        plugins:{legend:{display:false}},
+        scales:{x:{grid:{color:'#0d2e4a55'},ticks:{maxRotation:35,font:{size:10}}},y:{grid:{color:'#0d2e4a55'},ticks:{callback:v=>v>=1000?(v/1000)+'K':v}}}
+      }
+    });
+    return()=>chart.current?.destroy();
+  },[]);
+  return <canvas ref={ref} height={100}/>;
+}
+
+function ConfMatrix(){
+  const classes=['Normal','DoS','Probe','R2L','U2R'];
+  const cm=[[13467,0,1,0,0],[0,13468,1,0,0],[1,0,13466,1,0],[0,0,1,13465,2],[0,0,0,2,13466]];
+  const maxV=13468;
+  function heatColor(v){const n=v/maxV;if(n>.5)return`rgba(0,212,245,${.1+n*.5})`;if(n>0)return`rgba(245,51,74,${.2+n*.4})`;return'rgba(255,255,255,.02)';}
+  return(
+    <div className="cm-grid">
+      <div className="cm-cell cm-rl"/>
+      {classes.map(c=><div key={c} className="cm-cell cm-hdr">{c}</div>)}
+      {cm.map((row,i)=>[
+        <div key={`rl${i}`} className="cm-cell cm-rl">{classes[i]}</div>,
+        ...row.map((v,j)=>(
+          <div key={`${i}${j}`} className="cm-cell" style={{background:heatColor(v),color:i===j?CYAN:v>0?RED:'#3d6880',fontFamily:'var(--mono)',fontSize:'.75rem',fontWeight:i===j?'700':'400',borderRadius:'3px'}}>
+            {v.toLocaleString()}
+          </div>
+        ))
+      ])}
+    </div>
+  );
+}
+
+function FeatureImportances(){
+  const feats=[['total_bytes',.0805],['src_bytes',.0660],['dst_bytes',.0548],['src_bytes_ratio',.0443],['logged_in',.0363],['log_src_bytes',.0341],['log_dst_bytes',.0318],['count',.0295],['srv_count',.0270],['dst_host_count',.0258],['packet_rate',.0231],['byte_diff',.0218],['dst_host_srv_count',.0205],['protocol_tcp',.0191],['flag_SF',.0178]];
+  const [vis,setVis]=useState(false),ref=useRef();
+  useEffect(()=>{
+    const obs=new IntersectionObserver(([e])=>{if(e.isIntersecting){setTimeout(()=>setVis(true),200);obs.disconnect();}},{threshold:.2});
+    if(ref.current)obs.observe(ref.current);
+    return()=>obs.disconnect();
+  },[]);
+  return(
+    <div className="feat-list" ref={ref}>
+      {feats.map(([name,score],i)=>(
+        <div className="feat-row" key={name}>
+          <span className="feat-name">{name}</span>
+          <div className="feat-bg"><div className="feat-fill" style={{width:vis?`${(score/feats[0][1]*100).toFixed(1)}%`:'0%',transitionDelay:`${i*.04}s`}}/></div>
+          <span className="feat-sc">{score.toFixed(4)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function App(){
+  return(
+    <div className="dash">
+      <div className="kpi-row">
+        {[['67,343','Normal Traffic','53.46% of dataset','c0'],['45,927','DoS Attacks','36.46% of dataset','c1'],['11,656','Probe Attacks','9.25% of dataset','c2'],['995','R2L Attacks','0.79% of dataset','c3'],['52','U2R Attacks','0.04% of dataset','c4']].map(([v,l,s,c],i)=>(
+          <div key={l} className={`kpi ${c}`} style={{animation:`fadeSlideUp .5s ${i*.08}s both`}}>
+            <span className="kpi-v">{v}</span><div className="kpi-l">{l}</div><div className="kpi-s">{s}</div>
+          </div>
+        ))}
+      </div>
+
+      <ChartCard id="pie" title="Traffic Distribution" sub="Training Set" col="col-4"><DonutChart/></ChartCard>
+      <ChartCard id="proto" title="Protocol Breakdown" sub="Normal vs Attack" col="col-4"><ProtocolChart/></ChartCard>
+      <ChartCard id="radar" title="Attack Category Profile" sub="Normalised Features" col="col-4"><RadarChart/></ChartCard>
+
+      <ChartCard id="bench" title="Model Benchmark" sub="5-Fold CV" col="col-6">
+        <table>
+          <thead><tr><th>Model</th><th>Accuracy</th><th>F1 Macro</th><th>Precision</th><th>Recall</th></tr></thead>
+          <tbody>
+            <tr className="winner"><td>Random Forest ★</td><td>99.98% <span className="badge b-g">Best</span></td><td>0.9998</td><td>0.9998</td><td>0.9998</td></tr>
+            <tr><td>XGBoost</td><td>99.82%</td><td>0.9981</td><td>0.9980</td><td>0.9982</td></tr>
+            <tr><td>Decision Tree</td><td>99.71%</td><td>0.9970</td><td>0.9968</td><td>0.9972</td></tr>
+            <tr><td>Logistic Regression</td><td>91.4% <span className="badge b-r">Weak</span></td><td>0.8870</td><td>0.9020</td><td>0.8730</td></tr>
+          </tbody>
+        </table>
+      </ChartCard>
+
+      <ChartCard id="roc" title="ROC AUC — One vs Rest" sub="All Classes" col="col-6"><ROCChart/></ChartCard>
+
+      <ChartCard id="cm" title="Confusion Matrix" sub="Validation Set 20%" col="col-6"><ConfMatrix/></ChartCard>
+      <ChartCard id="feat" title="Top 15 Feature Importances" sub="Random Forest" col="col-6"><FeatureImportances/></ChartCard>
+
+      <ChartCard id="bar" title="Granular Attack Distribution" sub="Top 15 types" col="col-12"><AttackBar/></ChartCard>
+    </div>
+  );
+}
+
+ReactDOM.render(<App/>,document.getElementById('root'));
+</script>
+
+<style>@keyframes fadeSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}</style>
+
+<script src="js/dashboard.js"></script>
+<script src="js/dashboard-utils.js"></script>
+</body>
+</html>

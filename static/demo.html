@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Live Demo — SentinelNet</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/demo.css"/>
+</head>
+<body>
+<nav id="navbar">
+  <a class="nav-logo" href="index.html"><div class="nav-dot"></div>SENTINELNET</a>
+  <ul class="nav-links">
+    <li><a href="index.html#pipeline">Pipeline</a></li>
+    <li><a href="index.html#dataset">Dataset</a></li>
+    <li><a href="index.html#results">Results</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="demo.html" class="active">Live Demo</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-header">
+    <h1>Live Prediction Demo</h1>
+    <p>// Input network connection features → Random Forest classifies attacks &nbsp;·&nbsp; 99.98% Accuracy on NSL-KDD Dataset</p>
+  </div>
+
+  <div class="demo-grid">
+    <!-- FORM -->
+    <div class="form-card">
+      <div class="form-section-title">// Load a Preset or Enter Custom Values</div>
+      <div class="presets">
+        <button class="preset-btn normal" onclick="loadPreset('normal')">Normal Traffic</button>
+        <button class="preset-btn dos"    onclick="loadPreset('dos')">DoS Attack</button>
+        <button class="preset-btn probe"  onclick="loadPreset('probe')">Probe Attack</button>
+        <button class="preset-btn r2l"    onclick="loadPreset('r2l')">R2L Attack</button>
+        <button class="preset-btn u2r"    onclick="loadPreset('u2r')">U2R Attack</button>
+      </div>
+
+      <div class="form-section-title">// Connection Basics</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Protocol Type</label>
+          <select id="protocol_type">
+            <option value="tcp">tcp</option>
+            <option value="udp">udp</option>
+            <option value="icmp">icmp</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Service</label>
+          <select id="service">
+            <option>http</option><option>ftp</option><option>ftp_data</option>
+            <option>smtp</option><option>ssh</option><option>telnet</option>
+            <option>domain_u</option><option>private</option><option>other</option>
+            <option>ecr_i</option><option>finger</option><option>courier</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Flag</label>
+          <select id="flag">
+            <option>SF</option><option>S0</option><option>REJ</option>
+            <option>RSTO</option><option>RSTR</option><option>SH</option><option>OTH</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Duration (s)</label>
+          <input type="number" id="duration" value="0" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Src Bytes</label>
+          <input type="number" id="src_bytes" value="491" min="0" />
+        </div>
+        <div class="form-group">
+          <label>Dst Bytes</label>
+          <input type="number" id="dst_bytes" value="0" min="0" />
+        </div>
+      </div>
+
+      <div class="form-section-title">// Traffic Features</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Logged In (0/1)</label>
+          <select id="logged_in">
+            <option value="0">0 — No</option>
+            <option value="1">1 — Yes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Land (0/1)</label>
+          <select id="land">
+            <option value="0">0 — No</option>
+            <option value="1">1 — Yes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Count</label>
+          <input type="number" id="count" value="2" min="0" max="511" />
+        </div>
+        <div class="form-group">
+          <label>Srv Count</label>
+          <input type="number" id="srv_count" value="2" min="0" max="511" />
+        </div>
+        <div class="form-group">
+          <label>Serror Rate</label>
+          <input type="number" id="serror_rate" value="0.00" step="0.01" min="0" max="1" />
+        </div>
+        <div class="form-group">
+          <label>Dst Host Count</label>
+          <input type="number" id="dst_host_count" value="255" min="0" max="255" />
+        </div>
+        <div class="form-group">
+          <label>Dst Host Srv Count</label>
+          <input type="number" id="dst_host_srv_count" value="255" min="0" max="255" />
+        </div>
+        <div class="form-group">
+          <label>Same Srv Rate</label>
+          <input type="number" id="same_srv_rate" value="1.00" step="0.01" min="0" max="1" />
+        </div>
+      </div>
+
+      <button class="submit-btn" id="analyzeBtn" onclick="analyze()">▶ &nbsp;Analyze Traffic</button>
+    </div>
+
+    <!-- RESULT PANEL -->
+    <div class="result-panel">
+      <div class="form-section-title">// Classification Result</div>
+
+      <div class="result-idle" id="resultIdle">
+        <div class="icon">🛡️</div>
+        <p>Fill in the connection features on the left<br />or load a preset, then click Analyze.</p>
+      </div>
+
+      <div class="result-loading" id="resultLoading">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">Analyzing traffic pattern…</div>
+      </div>
+
+      <div class="result-output" id="resultOutput">
+        <div class="verdict" id="verdictBox">
+          <div class="verdict-label">Classification</div>
+          <div class="verdict-class" id="verdictClass">—</div>
+          <div class="verdict-conf" id="verdictConf">—</div>
+        </div>
+
+        <div>
+          <div style="font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:0.75rem;">Confidence per Class</div>
+          <div class="conf-bars" id="confBars"></div>
+        </div>
+
+        <div class="explanation">
+          <div class="explanation-title">// Classification Verdict</div>
+          <div class="explanation-text" id="explanationText">—</div>
+        </div>
+
+        <div class="terminal">
+          <div class="terminal-bar"><div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div></div>
+          <div class="terminal-content" id="terminalLog"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="how-it-works">
+    <div class="how-title">// How This Demo Works</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">01</div>
+        <div class="step-t">Input Features</div>
+        <div class="step-d">You provide 8 key features matching the trained Random Forest model — protocol, bytes, flags, and connection stats.</div>
+      </div>
+      <div class="step">
+        <div class="step-n">02</div>
+        <div class="step-t">Feature Engineering</div>
+        <div class="step-d">Backend derives engineered features: total_bytes, src_bytes_ratio, packet_rate, byte_diff matching Notebook 03.</div>
+      </div>
+      <div class="step">
+        <div class="step-n">03</div>
+        <div class="step-t">Model Classification</div>
+        <div class="step-d">Random Forest (300 trees) + Isolation Forest make the 99.98%-accurate prediction using your local backend API.</div>
+      </div>
+      <div class="step">
+        <div class="step-n">04</div>
+        <div class="step-t">Explanation</div>
+        <div class="step-d">You get a verdict with confidence scores per class, plus anomaly detection and confidence breakdown.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PRESETS = {
+  normal: { protocol_type:'tcp', service:'http', flag:'SF', duration:0, src_bytes:491, dst_bytes:0, logged_in:0, land:0, count:2, srv_count:2, serror_rate:0.00, dst_host_count:255, dst_host_srv_count:255, same_srv_rate:1.00, wrong_fragment:0, urgent:0, hot:0, num_failed_logins:0, num_compromised:0, root_shell:0, su_attempted:0, num_root:0, num_file_creations:0, num_shells:0, num_access_files:0, num_outbound_cmds:0, is_host_login:0, is_guest_login:0, srv_serror_rate:0.0, rerror_rate:0.0, srv_rerror_rate:0.0, diff_srv_rate:0.0, srv_diff_host_rate:0.0, dst_host_same_srv_rate:1.0, dst_host_diff_srv_rate:0.0, dst_host_same_src_port_rate:0.1, dst_host_srv_diff_host_rate:0.0, dst_host_serror_rate:0.0, dst_host_srv_serror_rate:0.0, dst_host_rerror_rate:0.0, dst_host_srv_rerror_rate:0.0 },
+  dos:    { protocol_type:'tcp', service:'private', flag:'S0', duration:0, src_bytes:0, dst_bytes:0, logged_in:0, land:0, count:511, srv_count:511, serror_rate:1.00, dst_host_count:255, dst_host_srv_count:255, same_srv_rate:1.00, wrong_fragment:0, urgent:0, hot:0, num_failed_logins:0, num_compromised:0, root_shell:0, su_attempted:0, num_root:0, num_file_creations:0, num_shells:0, num_access_files:0, num_outbound_cmds:0, is_host_login:0, is_guest_login:0, srv_serror_rate:1.0, rerror_rate:0.0, srv_rerror_rate:0.0, diff_srv_rate:0.0, srv_diff_host_rate:0.0, dst_host_same_srv_rate:1.0, dst_host_diff_srv_rate:0.0, dst_host_same_src_port_rate:0.0, dst_host_srv_diff_host_rate:0.0, dst_host_serror_rate:1.0, dst_host_srv_serror_rate:1.0, dst_host_rerror_rate:0.0, dst_host_srv_rerror_rate:0.0 },
+  probe:  { protocol_type:'icmp', service:'ecr_i', flag:'SF', duration:0, src_bytes:1032, dst_bytes:0, logged_in:0, land:0, count:511, srv_count:511, serror_rate:0.00, dst_host_count:255, dst_host_srv_count:255, same_srv_rate:0.06, wrong_fragment:0, urgent:0, hot:0, num_failed_logins:0, num_compromised:0, root_shell:0, su_attempted:0, num_root:0, num_file_creations:0, num_shells:0, num_access_files:0, num_outbound_cmds:0, is_host_login:0, is_guest_login:0, srv_serror_rate:0.0, rerror_rate:0.0, srv_rerror_rate:0.0, diff_srv_rate:0.0, srv_diff_host_rate:0.0, dst_host_same_srv_rate:1.0, dst_host_diff_srv_rate:0.0, dst_host_same_src_port_rate:0.0, dst_host_srv_diff_host_rate:0.0, dst_host_serror_rate:0.0, dst_host_srv_serror_rate:0.0, dst_host_rerror_rate:0.0, dst_host_srv_rerror_rate:0.0 },
+  r2l:    { protocol_type:'tcp', service:'ftp', flag:'SF', duration:1, src_bytes:491, dst_bytes:2020, logged_in:1, land:0, count:1, srv_count:1, serror_rate:0.00, dst_host_count:4, dst_host_srv_count:4, same_srv_rate:1.00, wrong_fragment:0, urgent:0, hot:0, num_failed_logins:0, num_compromised:0, root_shell:0, su_attempted:0, num_root:0, num_file_creations:0, num_shells:0, num_access_files:0, num_outbound_cmds:0, is_host_login:0, is_guest_login:0, srv_serror_rate:0.0, rerror_rate:0.0, srv_rerror_rate:0.0, diff_srv_rate:0.0, srv_diff_host_rate:0.0, dst_host_same_srv_rate:1.0, dst_host_diff_srv_rate:0.0, dst_host_same_src_port_rate:0.0, dst_host_srv_diff_host_rate:0.0, dst_host_serror_rate:0.0, dst_host_srv_serror_rate:0.0, dst_host_rerror_rate:0.0, dst_host_srv_rerror_rate:0.0 },
+  u2r:    { protocol_type:'tcp', service:'telnet', flag:'SF', duration:9, src_bytes:1755, dst_bytes:2132, logged_in:1, land:0, count:1, srv_count:1, serror_rate:0.00, dst_host_count:1, dst_host_srv_count:1, same_srv_rate:1.00, wrong_fragment:0, urgent:0, hot:0, num_failed_logins:0, num_compromised:0, root_shell:0, su_attempted:0, num_root:0, num_file_creations:0, num_shells:0, num_access_files:0, num_outbound_cmds:0, is_host_login:0, is_guest_login:0, srv_serror_rate:0.0, rerror_rate:0.0, srv_rerror_rate:0.0, diff_srv_rate:0.0, srv_diff_host_rate:0.0, dst_host_same_srv_rate:1.0, dst_host_diff_srv_rate:0.0, dst_host_same_src_port_rate:0.0, dst_host_srv_diff_host_rate:0.0, dst_host_serror_rate:0.0, dst_host_srv_serror_rate:0.0, dst_host_rerror_rate:0.0, dst_host_srv_rerror_rate:0.0 }
+};
+
+const CLASS_COLORS = { Normal:'#00d4f5', DoS:'#f5334a', Probe:'#f5c842', R2L:'#f5834a', U2R:'#a855f7' };
+
+function loadPreset(name) {
+  const p = PRESETS[name];
+  Object.keys(p).forEach(k => {
+    const el = document.getElementById(k);
+    if (el) el.value = p[k];
+  });
+}
+
+function getFormData() {
+  const fields = Object.keys(PRESETS.normal);
+  const d = {};
+  fields.forEach(f => {
+    const el = document.getElementById(f);
+    if (!el) { d[f] = 0; return; }
+    d[f] = isNaN(+el.value) ? el.value : +el.value;
+  });
+  return d;
+}
+
+function showState(state) {
+  document.getElementById('resultIdle').style.display    = state==='idle'    ? 'flex' : 'none';
+  document.getElementById('resultLoading').style.display = state==='loading' ? 'flex' : 'none';
+  document.getElementById('resultOutput').style.display  = state==='result'  ? 'flex' : 'none';
+}
+
+const LOADING_MSGS = [
+  'Preparing request…',
+  'Contacting backend…',
+  'Running Random Forest classifier…',
+  'Computing confidence scores…'
+];
+
+async function analyze() {
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  showState('loading');
+
+  let msgIdx = 0;
+  const msgEl = document.getElementById('loadingText');
+  msgEl.textContent = LOADING_MSGS[0];
+  const msgTimer = setInterval(() => {
+    msgIdx = (msgIdx + 1) % LOADING_MSGS.length;
+    msgEl.textContent = LOADING_MSGS[msgIdx];
+  }, 900);
+
+  const data = getFormData();
+
+  try {
+    const res = await fetch('/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    const result = await res.json();
+    
+    clearInterval(msgTimer);
+    renderResult(result, data);
+  } catch(e) {
+    clearInterval(msgTimer);
+    msgEl.textContent = `❌ Error: ${e.message}. Is the backend running?`;
+    showState('loading');
+    setTimeout(() => { btn.disabled = false; }, 2000);
+    return;
+  }
+
+  btn.disabled = false;
+}
+
+function renderResult(result, data) {
+  const cls = result.prediction.class;
+  const probabilities = result.prediction.probabilities;
+  const color = CLASS_COLORS[cls] || '#fff';
+  const topConf = (result.prediction.confidence * 100).toFixed(1);
+
+  // Verdict
+  const box = document.getElementById('verdictBox');
+  box.style.borderColor = color + '60';
+  box.style.background = color + '10';
+  document.getElementById('verdictClass').textContent = cls;
+  document.getElementById('verdictClass').style.color = color;
+  document.getElementById('verdictConf').textContent = `Confidence: ${topConf}%`;
+  document.getElementById('verdictConf').style.color = color;
+
+  // Confidence bars
+  const bars = Object.entries(probabilities).sort((a,b) => b[1]-a[1]);
+  document.getElementById('confBars').innerHTML = bars.map(([c, v]) => `
+    <div class="conf-row">
+      <span class="conf-label" style="color:${CLASS_COLORS[c]}">${c}</span>
+      <div class="conf-bar-bg"><div class="conf-bar-fill" style="width:${(v*100).toFixed(1)}%;background:${CLASS_COLORS[c]}"></div></div>
+      <span class="conf-pct" style="color:${c===cls?'#fff':'var(--muted)'}">${(v*100).toFixed(1)}%</span>
+    </div>
+  `).join('');
+
+  // Explanation
+  document.getElementById('explanationText').textContent = result.verdict;
+
+  // Terminal log
+  const ts = new Date().toISOString();
+  document.getElementById('terminalLog').innerHTML = `
+<span class="t-muted">[${ts}]</span> <span class="t-cyan">backend</span> &gt; analyzing connection...<br/>
+<span class="t-muted">&gt;</span> protocol=<span class="t-cyan">${data.protocol_type}</span> service=<span class="t-cyan">${data.service}</span> flag=<span class="t-cyan">${data.flag}</span><br/>
+<span class="t-muted">&gt;</span> src_bytes=<span class="t-cyan">${data.src_bytes}</span> dst_bytes=<span class="t-cyan">${data.dst_bytes}</span> total=<span class="t-cyan">${data.src_bytes + data.dst_bytes}</span><br/>
+<span class="t-muted">&gt;</span> count=<span class="t-cyan">${data.count}</span> serror_rate=<span class="t-cyan">${data.serror_rate}</span> logged_in=<span class="t-cyan">${data.logged_in}</span><br/>
+<span class="t-muted">&gt;</span> running Random Forest classifier (n=300)...<br/>
+<span class="t-muted">&gt;</span> prediction: <span style="color:${color};font-weight:bold">${cls}</span> [conf: ${topConf}%]<br/>
+<span class="${cls==='Normal'?'t-green':'t-red'}">&gt; VERDICT: ${cls==='Normal'?'CLEAN TRAFFIC ✓':'ATTACK DETECTED ⚠'}</span>
+  `;
+
+  showState('result');
+}
+</script>
+
+<script src="js/demo.js"></script>
+</body>
+</html>
