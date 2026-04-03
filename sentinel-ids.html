@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sentinel IDS — Intrusion Detection System</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+/* ══════════════════════════════════════════
+   SENTINEL IDS  ·  Complete Stylesheet
+══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg0:#060d18;--bg1:#0b1628;--bg2:#0f1e35;--bg3:#162540;--bg4:#1c2e4a;
+  --b1:#1e3050;--b2:#244060;--b3:#2e5080;
+  --txt:#c8daf0;--txt2:#7a9abf;--txt3:#3a5a80;--txt4:#1e3050;
+  --grn:#00e8a2;--grn2:#00b87a;--grn3:#003d28;--grn4:#001f14;
+  --red:#ff4d6a;--red2:#cc2244;--red3:#3d0014;--red4:#200008;
+  --amb:#ffba00;--amb2:#cc8800;--amb3:#3d2d00;--amb4:#1f1600;
+  --blu:#3da8ff;--blu2:#1a78cc;--blu3:#002040;--blu4:#001028;
+  --org:#ff7c3a;--org2:#cc4a10;
+  --mono:'Share Tech Mono',monospace;
+  --head:'Rajdhani',sans-serif;
+}
+html,body{height:100%;background:var(--bg0);color:var(--txt);font-family:var(--head);overflow:hidden}
+/* scrollbar */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg1)}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+
+/* ── LAYOUT ── */
+.app{display:grid;grid-template-rows:56px 64px 1fr;height:100vh;overflow:hidden}
+.body{display:grid;grid-template-columns:1fr 320px;overflow:hidden}
+.left{overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.right{background:var(--bg1);border-left:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden}
+
+/* ── HEADER ── */
+.hdr{background:var(--bg1);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--grn),transparent);animation:scanline 4s linear infinite}
+@keyframes scanline{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-hex{width:28px;height:28px;background:var(--grn);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);animation:hexbeat 3s ease-in-out infinite}
+@keyframes hexbeat{0%,100%{filter:brightness(1)}50%{filter:brightness(1.4)}}
+.logo-name{font-family:var(--mono);font-size:16px;color:var(--grn);letter-spacing:4px;font-weight:700}
+.logo-ver{font-family:var(--mono);font-size:9px;color:var(--txt3);margin-top:2px;letter-spacing:2px}
+.hdr-mid{display:flex;gap:20px}
+.nav-tab{font-family:var(--mono);font-size:10px;color:var(--txt3);padding:4px 12px;border:1px solid transparent;border-radius:3px;cursor:pointer;letter-spacing:1px;transition:.2s}
+.nav-tab.active,.nav-tab:hover{color:var(--grn);border-color:var(--grn3);background:var(--grn4)}
+.hdr-right{display:flex;align-items:center;gap:14px}
+.pulse-ring{position:relative;width:10px;height:10px}
+.pulse-ring::before{content:'';position:absolute;inset:-4px;border:1px solid var(--grn);border-radius:50%;animation:ring 2s ease-out infinite;opacity:0}
+@keyframes ring{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.6);opacity:0}}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--grn);position:absolute;inset:1px}
+.sys-lbl{font-family:var(--mono);font-size:10px;color:var(--grn);letter-spacing:1px}
+.clk{font-family:var(--mono);font-size:12px;color:var(--txt2);background:var(--bg2);border:1px solid var(--b1);padding:4px 12px;border-radius:3px}
+
+/* ── METRICS BAR ── */
+.mbar{display:grid;grid-template-columns:repeat(5,1fr);background:var(--b1);gap:1px;border-bottom:1px solid var(--b1)}
+.met{background:var(--bg1);padding:10px 16px;position:relative;overflow:hidden;transition:.3s}
+.met::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;transition:width .5s}
+.met.gn::after{background:var(--grn);width:100%}
+.met.rd::after{background:var(--red);width:100%}
+.met.am::after{background:var(--amb);width:100%}
+.met.bl::after{background:var(--blu);width:100%}
+.met.wh::after{background:var(--b3);width:100%}
+.met-lbl{font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:1.5px;margin-bottom:4px}
+.met-val{font-size:26px;font-weight:700;letter-spacing:1px;transition:all .3s}
+.met-sub{font-family:var(--mono);font-size:9px;color:var(--txt3);margin-top:2px}
+.gn .met-val{color:var(--grn)}
+.rd .met-val{color:var(--red)}
+.am .met-val{color:var(--amb)}
+.bl .met-val{color:var(--blu)}
+.wh .met-val{color:var(--txt2)}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--b1);border-radius:6px;overflow:hidden}
+.card-hd{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--bg1);border-bottom:1px solid var(--b1)}
+.card-title{font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:2px}
+.card-body{padding:14px}
+.card-body.sm{padding:10px 14px}
+.card-body.none{padding:0}
+
+/* ── UPLOAD ── */
+.dropzone{border:1.5px dashed var(--b2);border-radius:6px;padding:22px 16px;text-align:center;cursor:pointer;transition:.25s;position:relative}
+.dropzone:hover,.dropzone.drag{border-color:var(--grn);background:rgba(0,232,162,.04)}
+.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-icon{font-size:26px;margin-bottom:8px}
+.dz-title{font-size:14px;color:var(--txt2);font-weight:600;margin-bottom:4px}
+.dz-hint{font-family:var(--mono);font-size:10px;color:var(--txt3);line-height:1.8}
+.dz-btn{display:inline-block;margin-top:10px;padding:6px 18px;background:var(--grn4);border:1px solid var(--grn3);border-radius:3px;font-family:var(--mono);font-size:10px;color:var(--grn);letter-spacing:1px}
+.csv-loaded{margin-top:10px;background:var(--bg1);border:1px solid var(--b1);border-radius:4px;padding:10px 12px}
+.csv-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.csv-name{font-family:var(--mono);font-size:10px;color:var(--grn)}
+.csv-clr{font-family:var(--mono);font-size:10px;color:var(--red);cursor:pointer;transition:.2s}
+.csv-clr:hover{color:var(--red2)}
+.csv-pre{font-family:var(--mono);font-size:9px;color:var(--txt3);background:var(--bg0);border:1px solid var(--b1);border-radius:3px;padding:8px;max-height:80px;overflow:auto;white-space:pre;line-height:1.6}
+
+/* ── TWO COL ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chart-wrap{position:relative;width:100%}
+
+/* ── LEGEND ── */
+.legend{display:flex;gap:14px}
+.leg-item{font-family:var(--mono);font-size:10px;display:flex;align-items:center;gap:5px}
+.leg-line{width:12px;height:2px;border-radius:1px}
+
+/* ── IP BARS ── */
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.prog-row:last-child{margin-bottom:0}
+.prog-ip{font-family:var(--mono);font-size:10px;color:var(--txt3);width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prog-bar{flex:1;height:5px;background:var(--bg1);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.prog-n{font-family:var(--mono);font-size:10px;color:var(--txt3);min-width:28px;text-align:right}
+
+/* ── THREAT TABLE ── */
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:11px;min-width:520px}
+.tbl th{font-family:var(--mono);font-size:9px;color:var(--txt3);padding:8px 12px;border-bottom:1px solid var(--b1);text-align:left;letter-spacing:.8px;background:var(--bg1);white-space:nowrap}
+.tbl td{padding:7px 12px;border-bottom:1px solid var(--bg3);white-space:nowrap}
+.tbl tbody tr:hover td{background:var(--bg3)}
+.tbl .empty td{text-align:center;padding:20px;color:var(--txt4);font-family:var(--mono);font-size:10px}
+.badge{padding:2px 8px;border-radius:3px;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.5px}
+.bcrit{background:var(--red4);color:var(--red);border:1px solid var(--red3)}
+.bhigh{background:#200d00;color:var(--org);border:1px solid #4d2200}
+.bmed{background:var(--amb4);color:var(--amb);border:1px solid var(--amb3)}
+.blow{background:var(--blu4);color:var(--blu);border:1px solid var(--blu3)}
+
+/* ── RIGHT PANEL ── */
+.panel-hd{font-family:var(--mono);font-size:9px;color:var(--txt3);padding:10px 14px;border-bottom:1px solid var(--b1);background:var(--bg2);letter-spacing:2px}
+.feed{flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:2px;min-height:0}
+.fe{display:flex;gap:6px;padding:5px 8px;border-radius:3px;background:var(--bg2);font-family:var(--mono);font-size:10px;border-left:2px solid var(--b1);line-height:1.5;animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.fe.crit{border-left-color:var(--red);background:var(--red4)}
+.fe.high{border-left-color:var(--org);background:#160800}
+.fe.med{border-left-color:var(--amb);background:var(--amb4)}
+.ftime{color:var(--txt3);min-width:56px;white-space:nowrap}
+.fmsg{color:var(--txt2);flex:1}
+.fmsg .ip{color:var(--txt);font-weight:600}
+
+/* ── ANALYSIS ── */
+.analysis{padding:12px 14px;border-top:1px solid var(--b1)}
+.an-title{font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:2px;margin-bottom:10px}
+.an-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bg3);font-size:12px}
+.an-row:last-child{border:none}
+.an-lbl{color:var(--txt3);font-family:var(--mono);font-size:10px}
+.an-val{font-family:var(--mono);font-size:10px;color:var(--txt2)}
+
+/* ── CONTROLS ── */
+.ctrls{padding:10px 12px;border-top:1px solid var(--b1);display:flex;gap:8px;flex-wrap:wrap;background:var(--bg2)}
+.btn{padding:7px 14px;border-radius:4px;font-family:var(--mono);font-size:10px;cursor:pointer;border:1px solid;transition:.15s;letter-spacing:.8px;font-weight:600}
+.btn:active{transform:scale(.96)}
+.btn-g{background:var(--grn4);border-color:var(--grn2);color:var(--grn)}
+.btn-g:hover{background:rgba(0,232,162,.12)}
+.btn-r{background:var(--red4);border-color:var(--red2);color:var(--red)}
+.btn-r:hover{background:rgba(255,77,106,.12)}
+.btn-d{background:var(--bg3);border-color:var(--b2);color:var(--txt2)}
+.btn-d:hover{background:var(--bg4);color:var(--txt)}
+
+/* ── ALERT TOAST ── */
+.toast{position:fixed;top:72px;right:20px;z-index:999;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast-item{background:var(--bg2);border:1px solid var(--b2);border-left:3px solid var(--red);border-radius:4px;padding:10px 14px;font-family:var(--mono);font-size:11px;color:var(--txt);min-width:260px;animation:toastin .3s ease,toastout .3s ease 3.7s forwards;pointer-events:auto}
+.toast-item.warn{border-left-color:var(--amb)}
+@keyframes toastin{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toastout{from{opacity:1}to{opacity:0}}
+.toast-lbl{font-size:9px;color:var(--txt3);letter-spacing:1px;margin-bottom:3px}
+
+/* ── SCAN LINE BG ── */
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,232,162,.008) 2px,rgba(0,232,162,.008) 4px);pointer-events:none;z-index:0}
+.app{position:relative;z-index:1}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .body{grid-template-columns:1fr}
+  .right{max-height:320px}
+  .mbar{grid-template-columns:repeat(3,1fr)}
+  .met:nth-child(n+4){display:none}
+  .two-col{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══ HEADER ═══ -->
+<header class="hdr">
+  <div class="logo">
+    <div class="logo-hex"></div>
+    <div>
+      <div class="logo-name">SENTINEL IDS</div>
+      <div class="logo-ver">NETWORK INTRUSION DETECTION SYSTEM v2.4</div>
+    </div>
+  </div>
+  <div class="hdr-mid">
+    <div class="nav-tab active">DASHBOARD</div>
+    <div class="nav-tab">THREATS</div>
+    <div class="nav-tab">ANALYTICS</div>
+    <div class="nav-tab">SETTINGS</div>
+  </div>
+  <div class="hdr-right">
+    <div class="pulse-ring"><div class="dot"></div></div>
+    <span class="sys-lbl" id="sys-lbl">STANDBY</span>
+    <span class="clk" id="clk">--:--:--</span>
+  </div>
+</header>
+
+<!-- ═══ METRICS BAR ═══ -->
+<div class="mbar">
+  <div class="met gn">
+    <div class="met-lbl">PACKETS / SEC</div>
+    <div class="met-val" id="m-pps">0</div>
+    <div class="met-sub">live network traffic</div>
+  </div>
+  <div class="met rd">
+    <div class="met-lbl">THREATS DETECTED</div>
+    <div class="met-val" id="m-thr">0</div>
+    <div class="met-sub">this session</div>
+  </div>
+  <div class="met am">
+    <div class="met-lbl">ANOMALY SCORE</div>
+    <div class="met-val" id="m-ano">0.0</div>
+    <div class="met-sub">risk index /10</div>
+  </div>
+  <div class="met bl">
+    <div class="met-lbl">UNIQUE IPs</div>
+    <div class="met-val" id="m-ips">0</div>
+    <div class="met-sub">observed hosts</div>
+  </div>
+  <div class="met wh">
+    <div class="met-lbl">AUTO-BLOCKED</div>
+    <div class="met-val" id="m-blk">0</div>
+    <div class="met-sub">flagged IPs</div>
+  </div>
+</div>
+
+<!-- ═══ BODY ═══ -->
+<div class="body">
+
+  <!-- LEFT PANEL -->
+  <div class="left">
+
+    <!-- UPLOAD -->
+    <div class="card">
+      <div class="card-hd">
+        <span class="card-title">DATA SOURCE</span>
+        <span class="card-title" id="csv-status" style="color:var(--txt3)">NO FILE LOADED · USING LIVE SIMULATION</span>
+      </div>
+      <div class="card-body sm">
+        <div class="dropzone" id="dropzone">
+          <input type="file" accept=".csv" id="csv-input"/>
+          <div class="dz-icon">📡</div>
+          <div class="dz-title">Drop a Network Log CSV Here</div>
+          <div class="dz-hint">
+            Supports NSL-KDD · CICIDS2017 · UNSW-NB15 · Custom formats<br>
+            Columns: timestamp · src_ip · dst_ip · protocol · bytes · label
+          </div>
+          <div class="dz-btn">BROWSE FILE</div>
+        </div>
+        <div class="csv-loaded" id="csv-loaded" style="display:none">
+          <div class="csv-hd">
+            <span class="csv-name" id="csv-name">—</span>
+            <span class="csv-clr" id="csv-clr">✕ REMOVE FILE</span>
+          </div>
+          <pre class="csv-pre" id="csv-pre"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRAFFIC CHART -->
+    <div class="card">
+      <div class="card-hd">
+        <span class="card-title">TRAFFIC TIMELINE</span>
+        <div class="legend">
+          <span class="leg-item" style="color:var(--grn)"><span class="leg-line" style="background:var(--grn)"></span>Normal</span>
+          <span class="leg-item" style="color:var(--red)"><span class="leg-line" style="background:var(--red)"></span>Threats</span>
+        </div>
+      </div>
+      <div class="card-body sm">
+        <div class="chart-wrap" style="height:170px"><canvas id="chart-traffic"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ATTACK + PROTOCOL -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-hd"><span class="card-title">ATTACK TYPES</span></div>
+        <div class="card-body sm">
+          <div class="chart-wrap" style="height:200px"><canvas id="chart-atk"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">PROTOCOL DIST.</span></div>
+        <div class="card-body sm">
+          <div class="chart-wrap" style="height:200px"><canvas id="chart-proto"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IP TRACKER -->
+    <div class="card">
+      <div class="card-hd">
+        <span class="card-title">TOP SUSPICIOUS SOURCE IPs</span>
+        <span class="card-title" id="ip-count" style="color:var(--txt3)">0 flagged</span>
+      </div>
+      <div class="card-body" id="ip-bars">
+        <span style="font-family:var(--mono);font-size:10px;color:var(--txt4)">No suspicious IPs detected yet</span>
+      </div>
+    </div>
+
+    <!-- THREAT TABLE -->
+    <div class="card">
+      <div class="card-hd">
+        <span class="card-title">THREAT LOG</span>
+        <span class="card-title" id="thr-count" style="color:var(--txt3)">0 events</span>
+      </div>
+      <div class="card-body none">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>TIME</th>
+                <th>SRC IP</th>
+                <th>DST IP</th>
+                <th>ATTACK TYPE</th>
+                <th>PROTOCOL</th>
+                <th>BYTES</th>
+                <th>SEVERITY</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-body">
+              <tr class="empty"><td colspan="7">No threats detected yet — system monitoring all interfaces</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right">
+    <div class="panel-hd">LIVE EVENT FEED</div>
+    <div class="feed" id="feed"></div>
+
+    <div class="analysis">
+      <div class="an-title">SESSION ANALYSIS</div>
+      <div class="an-row"><span class="an-lbl">Total packets</span><span class="an-val" id="a-pk">0</span></div>
+      <div class="an-row"><span class="an-lbl">Total bytes</span><span class="an-val" id="a-by">0</span></div>
+      <div class="an-row"><span class="an-lbl">Avg bytes / pkt</span><span class="an-val" id="a-av">0</span></div>
+      <div class="an-row"><span class="an-lbl">Threat rate</span><span class="an-val" id="a-rt">0.00%</span></div>
+      <div class="an-row"><span class="an-lbl">Top attack</span><span class="an-val" id="a-tp">—</span></div>
+      <div class="an-row"><span class="an-lbl">Port scan</span><span class="an-val" id="a-ps" style="color:var(--grn)">NO</span></div>
+      <div class="an-row"><span class="an-lbl">Exfil risk</span><span class="an-val" id="a-ex" style="color:var(--grn)">LOW</span></div>
+      <div class="an-row"><span class="an-lbl">Data source</span><span class="an-val" id="a-src">Simulation</span></div>
+    </div>
+
+    <div class="ctrls">
+      <button class="btn btn-g" id="btn-start">▶ START</button>
+      <button class="btn btn-r" id="btn-stop" style="display:none">■ STOP</button>
+      <button class="btn btn-d" id="btn-clr">CLR LOG</button>
+      <button class="btn btn-d" id="btn-exp">⬇ EXPORT</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════
+   SENTINEL IDS — Core Engine
+══════════════════════════════════════════════ */
+
+const $  = id => document.getElementById(id);
+const ri = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+const rip = () => `${ri(1,254)}.${ri(0,255)}.${ri(0,255)}.${ri(1,254)}`;
+const ts  = () => new Date().toTimeString().slice(0,8);
+const fmtN = n => {
+  n = +n;
+  if(n>=1e6) return (n/1e6).toFixed(1)+'M';
+  if(n>=1e3) return (n/1e3).toFixed(1)+'K';
+  return Math.round(n).toString();
+};
+
+/* ── CONSTANTS ── */
+const ATTACKS = ['DoS','PortScan','Brute Force','SQL Injection','XSS','C2 Beacon','Data Exfil','MITM'];
+const PROTOS  = ['TCP','UDP','ICMP','HTTP','DNS','SSH'];
+const SEV_MAP = {
+  'DoS':'critical','PortScan':'high','Brute Force':'high',
+  'SQL Injection':'critical','XSS':'medium','C2 Beacon':'critical',
+  'Data Exfil':'high','MITM':'critical'
+};
+const BADGE = {critical:'bcrit',high:'bhigh',medium:'bmed',low:'blow'};
+const ATK_COLORS_BG  = ['#3d0a0a','#3d1500','#3d0e00','#2a1200','#001428','#000d24','#3d0a0a','#1a0e00'];
+const ATK_COLORS_BDR = ['#ff4d6a','#ff7c3a','#ff5a28','#ffba00','#3da8ff','#6c9aff','#ff4d6a','#ff7c3a'];
+
+/* ── STATE ── */
+let running=false, timer=null;
+let threats=[], pkts=0, tbytes=0, blocked=0;
+let uIPs=new Set(), atkC={}, protoC={TCP:0,UDP:0,ICMP:0,HTTP:0,DNS:0,SSH:0}, ipSusp={};
+let csvRows=null, csvIdx=0;
+
+/* ── CLOCK ── */
+setInterval(()=>{ $('clk').textContent = ts(); },1000);
+$('clk').textContent = ts();
+
+/* ══ CHARTS ══════════════════════════════════ */
+
+/* Traffic Timeline */
+const cTraffic = new Chart($('chart-traffic').getContext('2d'),{
+  type:'line',
+  data:{
+    labels:Array(24).fill(''),
+    datasets:[
+      {data:Array(24).fill(0),borderColor:'#00e8a2',backgroundColor:'rgba(0,232,162,.07)',tension:.4,pointRadius:0,fill:true,borderWidth:1.5},
+      {data:Array(24).fill(0),borderColor:'#ff4d6a',backgroundColor:'rgba(255,77,106,.07)',tension:.4,pointRadius:0,fill:true,borderWidth:1.5}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    animation:{duration:250},
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{ticks:{display:false},grid:{color:'rgba(255,255,255,.03)'},border:{color:'#1e3050'}},
+      y:{ticks:{color:'#2e5080',font:{size:8}},grid:{color:'rgba(255,255,255,.04)'},border:{color:'#1e3050'}}
+    }
+  }
+});
+
+/* Attack Types */
+const cAtk = new Chart($('chart-atk').getContext('2d'),{
+  type:'bar',
+  data:{
+    labels:ATTACKS,
+    datasets:[{
+      data:Array(8).fill(0),
+      backgroundColor:ATK_COLORS_BG,
+      borderColor:ATK_COLORS_BDR,
+      borderWidth:1
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,indexAxis:'y',
+    animation:{duration:300},
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{ticks:{color:'#2e5080',font:{size:8}},grid:{color:'rgba(255,255,255,.04)'},border:{color:'#1e3050'}},
+      y:{ticks:{color:'#4a7a9a',font:{size:8}},grid:{display:false},border:{color:'#1e3050'}}
+    }
+  }
+});
+
+/* Protocol Doughnut */
+const cProto = new Chart($('chart-proto').getContext('2d'),{
+  type:'doughnut',
+  data:{
+    labels:PROTOS,
+    datasets:[{
+      data:[40,25,10,15,5,5],
+      backgroundColor:['#1d4ed8','#0f766e','#7c3aed','#065f46','#92400e','#be123c'],
+      borderColor:'#0f1e35',
+      borderWidth:2
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    animation:{duration:300},
+    plugins:{
+      legend:{
+        display:true,position:'bottom',
+        labels:{color:'#4a7a9a',font:{size:9},padding:8,boxWidth:8}
+      }
+    }
+  }
+});
+
+/* ══ CHART UPDATERS ══ */
+function pushTraffic(isThreat){
+  const nd=cTraffic.data.datasets[0].data;
+  const td=cTraffic.data.datasets[1].data;
+  nd.push(isThreat?ri(200,700):ri(700,1400));
+  td.push(isThreat?ri(25,90):ri(0,8));
+  if(nd.length>24){nd.shift();td.shift();}
+  cTraffic.update('none');
+}
+function refreshAtkChart(){
+  cAtk.data.datasets[0].data = ATTACKS.map(a=>atkC[a]||0);
+  cAtk.update('none');
+}
+function refreshProtoChart(){
+  cProto.data.datasets[0].data = PROTOS.map(p=>protoC[p]||0);
+  cProto.update('none');
+}
+
+/* ══ IP BAR CHART ══ */
+function renderIPBars(){
+  const sorted = Object.entries(ipSusp).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  $('ip-count').textContent = Object.keys(ipSusp).length+' flagged';
+  const box = $('ip-bars');
+  if(!sorted.length){
+    box.innerHTML='<span style="font-family:var(--mono);font-size:10px;color:var(--txt4)">No suspicious IPs detected yet</span>';
+    return;
+  }
+  const max = sorted[0][1]||1;
+  box.innerHTML = sorted.map(([ip,n])=>{
+    const pct = Math.round(n/max*100);
+    const c = n>10?'var(--red)':n>5?'var(--org)':'var(--amb)';
+    return `<div class="prog-row">
+      <span class="prog-ip">${ip}</span>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${c}"></div></div>
+      <span class="prog-n">${n}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ══ LOG FEED ══ */
+function addLog(msg, level='', ip=''){
+  const feed=$('feed');
+  const d=document.createElement('div');
+  d.className=`fe ${level}`;
+  d.innerHTML=`<span class="ftime">${ts()}</span><span class="fmsg">${ip?`<span class="ip">${ip}</span> · `:''}${msg}</span>`;
+  feed.insertBefore(d,feed.firstChild);
+  if(feed.children.length>120)feed.removeChild(feed.lastChild);
+}
+
+/* ══ TOAST ALERT ══ */
+function showToast(title, msg, type=''){
+  const box=$('toast');
+  const d=document.createElement('div');
+  d.className=`toast-item ${type}`;
+  d.innerHTML=`<div class="toast-lbl">${title}</div>${msg}`;
+  box.appendChild(d);
+  setTimeout(()=>d.remove(),4200);
+}
+
+/* ══ THREAT TABLE ══ */
+function addThreatRow(data){
+  threats.push(data);
+  $('thr-count').textContent=`${threats.length} event${threats.length!==1?'s':''}`;
+  const sev = SEV_MAP[data.type]||'low';
+  const tbody=$('tbl-body');
+  // remove empty placeholder
+  const empty=tbody.querySelector('.empty');
+  if(empty)empty.remove();
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td style="font-family:var(--mono);font-size:9px;color:var(--txt3)">${data.time}</td>
+    <td style="font-family:var(--mono);font-size:10px;color:var(--red)">${data.src}</td>
+    <td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">${data.dst}</td>
+    <td style="font-size:11px;font-weight:600">${data.type}</td>
+    <td style="font-family:var(--mono);font-size:10px;color:var(--txt2)">${data.proto}</td>
+    <td style="font-family:var(--mono);font-size:10px;color:var(--txt3)">${fmtN(data.bytes)}</td>
+    <td><span class="badge ${BADGE[sev]}">${sev.toUpperCase()}</span></td>`;
+  tbody.insertBefore(tr,tbody.firstChild);
+  if(tbody.children.length>60)tbody.removeChild(tbody.lastChild);
+}
+
+/* ══ METRICS + ANALYSIS ══ */
+function updateMetrics(){
+  $('m-pps').textContent = fmtN(ri(500,1600));
+  $('m-thr').textContent = threats.length;
+  $('m-ips').textContent = uIPs.size;
+  $('m-blk').textContent = blocked;
+  const score = Math.min(10,
+    threats.length*0.2 +
+    (atkC['DoS']||0)*0.4 +
+    (atkC['C2 Beacon']||0)*0.9 +
+    (atkC['SQL Injection']||0)*0.7
+  ).toFixed(1);
+  $('m-ano').textContent = score;
+
+  $('a-pk').textContent = fmtN(pkts);
+  $('a-by').textContent = fmtN(tbytes);
+  $('a-av').textContent = pkts>0?fmtN(Math.round(tbytes/pkts)):'0';
+  $('a-rt').textContent = pkts>0?(threats.length/pkts*100).toFixed(2)+'%':'0.00%';
+
+  const top=Object.entries(atkC).sort((a,b)=>b[1]-a[1])[0];
+  $('a-tp').textContent=top?top[0]:'—';
+
+  const scan=(atkC['PortScan']||0)>=3;
+  $('a-ps').textContent=scan?'YES':'NO';
+  $('a-ps').style.color=scan?'var(--red)':'var(--grn)';
+
+  const ex=(atkC['Data Exfil']||0)>1?'HIGH':(atkC['C2 Beacon']||0)>0?'MEDIUM':'LOW';
+  $('a-ex').textContent=ex;
+  $('a-ex').style.color=ex==='HIGH'?'var(--red)':ex==='MEDIUM'?'var(--amb)':'var(--grn)';
+}
+
+/* ══ CORE TICK ══ */
+let lastToastTime=0;
+function tick(row){
+  const isThreat = row
+    ? !['BENIGN','normal','Normal','benign',''].includes((row.label||'').trim())
+    : Math.random()<0.16;
+
+  const src   = row?.src_ip   || rip();
+  const dst   = row?.dst_ip   || rip();
+  const proto = row?.protocol || PROTOS[ri(0,5)];
+  const bytes = parseInt(row?.bytes||row?.total_fwd_packets||ri(64,65535))||ri(64,65535);
+  const atk   = isThreat
+    ? (row?.label && row.label!=='BENIGN' ? row.label : ATTACKS[ri(0,7)])
+    : null;
+
+  pkts++;
+  tbytes += bytes;
+  uIPs.add(src);
+  protoC[proto] = (protoC[proto]||0)+1;
+  refreshProtoChart();
+  pushTraffic(isThreat);
+
+  if(isThreat){
+    ipSusp[src]=(ipSusp[src]||0)+1;
+    if(ipSusp[src]===5){
+      blocked++;
+      addLog(`IP auto-blocked after 5 alerts`,'high',src);
+    }
+    atkC[atk]=(atkC[atk]||0)+1;
+    addThreatRow({time:ts(),src,dst,type:atk,proto,bytes});
+    refreshAtkChart();
+    const sev=SEV_MAP[atk]||'high';
+    const lvl=sev==='critical'?'crit':sev==='high'?'high':'med';
+    addLog(`${atk} attack detected · ${fmtN(bytes)} bytes`,lvl,src);
+    // show toast for critical
+    if(sev==='critical' && Date.now()-lastToastTime>3000){
+      showToast('⚠ CRITICAL THREAT DETECTED',`${atk} from ${src}`);
+      lastToastTime=Date.now();
+    }
+  } else if(Math.random()<0.07){
+    addLog(`Normal traffic · ${proto} · ${fmtN(bytes)}B`,'',src);
+  }
+
+  if(pkts%5===0){ renderIPBars(); updateMetrics(); }
+}
+
+/* ══ CSV MODE ══ */
+function tickCSV(){
+  if(csvRows?.length){ tick(csvRows[csvIdx%csvRows.length]); csvIdx++; }
+  else tick();
+}
+
+/* ══ START/STOP ══ */
+$('btn-start').addEventListener('click',()=>{
+  if(running)return;
+  running=true;
+  $('btn-start').style.display='none';
+  $('btn-stop').style.display='inline-block';
+  $('sys-lbl').textContent='MONITORING ACTIVE';
+  addLog('IDS engine started · monitoring all network interfaces');
+  timer=setInterval(()=>csvRows?tickCSV():tick(),360);
+});
+
+$('btn-stop').addEventListener('click',()=>{
+  running=false; clearInterval(timer);
+  $('btn-stop').style.display='none';
+  $('btn-start').style.display='inline-block';
+  $('sys-lbl').textContent='PAUSED';
+  addLog('Engine paused');
+});
+
+$('btn-clr').addEventListener('click',()=>{
+  $('feed').innerHTML='';
+  addLog('Event log cleared');
+});
+
+$('btn-exp').addEventListener('click',()=>{
+  if(!threats.length){ addLog('No threats to export yet'); return; }
+  const header='time,src_ip,dst_ip,type,protocol,bytes,severity';
+  const rows=threats.map(t=>`${t.time},${t.src},${t.dst},${t.type},${t.proto},${t.bytes},${SEV_MAP[t.type]||'low'}`);
+  const csv=[header,...rows].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`sentinel_threats_${Date.now()}.csv`;
+  a.click();
+  addLog(`Exported ${threats.length} threat records to CSV`);
+  showToast('EXPORT COMPLETE',`${threats.length} threat records saved`,'warn');
+});
+
+/* ══ CSV PARSER ══ */
+function parseCSV(text){
+  const lines=text.trim().split(/\r?\n/);
+  if(lines.length<2)return[];
+  const hdrs=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/[^a-z0-9_]/g,'_'));
+  return lines.slice(1).filter(l=>l.trim()).map(line=>{
+    const vals=line.split(','); const obj={};
+    hdrs.forEach((h,i)=>{ obj[h]=(vals[i]||'').trim().replace(/^"|"$/g,''); });
+    obj.src_ip   = obj.src_ip||obj.source_ip||obj.srcip||obj.source||rip();
+    obj.dst_ip   = obj.dst_ip||obj.dest_ip||obj.dstip||obj.destination||rip();
+    obj.protocol = obj.protocol||obj.proto||obj.service||'TCP';
+    obj.bytes    = obj.bytes||obj.total_length_of_fwd_packets||obj.flow_bytes_s||ri(64,65535);
+    obj.label    = obj.label||obj.attack_type||obj.class||obj.category||obj.attack||'BENIGN';
+    return obj;
+  });
+}
+
+function handleFile(file){
+  if(!file)return;
+  if(!file.name.toLowerCase().endsWith('.csv')){
+    showToast('ERROR','Please upload a .csv file');
+    addLog('Error: not a CSV file','crit');
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=e=>{
+    csvRows=parseCSV(e.target.result);
+    csvIdx=0;
+    const preview=e.target.result.split('\n').slice(0,6).join('\n');
+    $('csv-status').textContent=`${file.name.toUpperCase()} · ${csvRows.length} ROWS LOADED`;
+    $('csv-name').textContent=`✓  ${csvRows.length} records · ${file.name}`;
+    $('csv-pre').textContent=preview;
+    $('csv-loaded').style.display='block';
+    $('a-src').textContent=file.name;
+    addLog(`CSV loaded: ${file.name} · ${csvRows.length} records ready`);
+    showToast('CSV LOADED',`${csvRows.length} records from ${file.name}`,'warn');
+  };
+  reader.onerror=()=>{ addLog('Error reading file','crit'); };
+  reader.readAsText(file);
+}
+
+$('csv-input').addEventListener('change',e=>handleFile(e.target.files[0]));
+$('csv-clr').addEventListener('click',()=>{
+  csvRows=null; csvIdx=0;
+  $('csv-loaded').style.display='none';
+  $('csv-status').textContent='NO FILE LOADED · USING LIVE SIMULATION';
+  $('csv-input').value='';
+  $('a-src').textContent='Simulation';
+  addLog('CSV removed · reverted to live simulation');
+});
+
+const dz=$('dropzone');
+dz.addEventListener('dragover', e=>{ e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{ e.preventDefault(); dz.classList.remove('drag'); handleFile(e.dataTransfer.files[0]); });
+
+/* ══ NAV TABS (cosmetic) ══ */
+document.querySelectorAll('.nav-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+  });
+});
+
+/* ══ BOOT ══ */
+addLog('Sentinel IDS v2.4 initialized');
+addLog('Detection engine: ML + signature hybrid mode');
+addLog('Interfaces: eth0 · eth1 · wlan0 · tap0');
+addLog('Ready — upload a CSV or press ▶ START to simulate');
+updateMetrics();
+</script>
+</body>
+</html>
