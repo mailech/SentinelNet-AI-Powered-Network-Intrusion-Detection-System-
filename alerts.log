@@ -8,3 +8,7 @@
 [08:51:51] ALERT: Suspicious Packet | conf=0.7811
 [08:51:58] ALERT: Suspicious Packet | conf=0.8908
 [08:52:02] ALERT: Suspicious Packet | conf=1.0000
+[09:08:41] ALERT: User Activity | conf=0.9826
+[09:09:21] ALERT: Suspicious Packet | conf=1.0000
+[09:09:23] ALERT: Suspicious Packet | conf=1.0000
+[09:09:25] ALERT: Suspicious Packet | conf=1.0000
