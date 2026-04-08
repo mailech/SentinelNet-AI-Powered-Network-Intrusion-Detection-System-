@@ -4,6 +4,10 @@ SentinelNet is a full-stack, real-time Network Intrusion Detection System (NIDS)
 
 ---
 
+### 🌐 [Live Demo: SentinelNet Dashboard](https://sentinel-ywbn.onrender.com/)
+
+---
+
 ## 🚀 Features
 
 - **AI Classification**: Uses a Random Forest model trained on the NSL-KDD dataset to detect 4 major attack types (DoS, Probe, R2L, U2R).
